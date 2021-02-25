@@ -1,4 +1,5 @@
 venv
-data
+dataset
+test
 .vscode
 trash
