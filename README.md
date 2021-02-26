@@ -13,7 +13,7 @@ This repository contains:
 * a `recognize.py` script to run the model on an image,
 * a `test_model.py` script to run the model on multiple images (almost strict copy of the previous script), 
 * an `/assets` folder where one can find the models used for embeddings extractions and the face_alignment.py script imported in the main scripts,
-* an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the recognize.py script).
+* an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the `recognize.py` script).
 
 First of all, the user must install the needed libraries by running the command line:
 ```sh
@@ -115,7 +115,7 @@ It seems that the last method does better results. It tested different parameter
 
 I chose to stay with the automatic mode, but I'll need to do more tests if the dataset is changed.
 
-***Edit: I added an export option in the test_model.py script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gather even more.***
+***Edit: I added an export option in the `test_model.py` script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gather even more.***
 
 ## Credits
 

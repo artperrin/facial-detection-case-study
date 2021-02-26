@@ -4,6 +4,7 @@ from collections import Counter
 from imutils import paths
 import numpy as np
 import logging as lg
+import time
 import argparse
 import imutils
 import pickle
@@ -62,6 +63,7 @@ args = vars(ap.parse_args())
 if args["export"] is not None:
     FILE = []
 
+start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
 protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
@@ -201,3 +203,4 @@ if args["export"] is not None:
     with open(args["export"]+"/results.txt","w") as file:
         file.writelines(FILE) 
 
+lg.info(f'Program ended within {round(time.time() - start, 2)} seconds.')
