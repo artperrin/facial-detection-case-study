@@ -59,6 +59,10 @@ As the results seems to be better, I've encountered some unusual behaviour: some
 
 I will now search for more data to train the model and run another test.
 
+***Edit: My testing program was wrong, because the input faces were not aligned. I corrected this and the above false result disappeared:***
+
+![corrected](./readme_figures/fixed.jpg)
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.

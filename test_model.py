@@ -1,4 +1,5 @@
 # import the necessary packages
+from assets.face_alignment import face_alignment
 from imutils import paths
 import numpy as np
 import logging as lg
@@ -24,6 +25,8 @@ ap.add_argument("-l", "--le", default='./output/le.pickle',
 	help="path to label encoder")
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
+ap.add_argument("-v", "--visualization", type=bool, default=False,
+	help="if the user wants to visualize the face alignment")
 args = vars(ap.parse_args())
 
 # load our serialized face detector from disk
@@ -48,6 +51,7 @@ count=1
 for imageName in imagePaths:
 	image = cv2.imread(imageName)
 	image = imutils.resize(image, width=600)
+	image = face_alignment(image, args["visualization"])
 	(h, w) = image.shape[:2]
 	# construct a blob from the image
 	imageBlob = cv2.dnn.blobFromImage(
@@ -65,8 +69,7 @@ for imageName in imagePaths:
 		confidence = detections[0, 0, i, 2]
 		# filter out weak detections
 		if confidence > args["confidence"]:
-			# compute the (x, y)-coordinates of the bounding box for the
-			# face
+			# compute the (x, y)-coordinates of the bounding box for the face
 			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
 			(startX, startY, endX, endY) = box.astype("int")
 			# extract the face ROI

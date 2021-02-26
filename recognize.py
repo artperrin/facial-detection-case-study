@@ -1,4 +1,5 @@
 # import the necessary packages
+from assets.face_alignment import face_alignment
 import numpy as np
 import logging as lg
 import argparse
@@ -24,6 +25,8 @@ ap.add_argument("-l", "--le", default='./output/le.pickle',
 	help="path to label encoder")
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
+ap.add_argument("-v", "--visualization", type=bool, default=False,
+	help="if the user wants to visualize the face alignment")	
 args = vars(ap.parse_args())
 
 start = time.time()
@@ -44,7 +47,9 @@ lg.info("Loading image and applying detection...")
 # maintaining the aspect ratio), and then grab the image dimensions
 image = cv2.imread(args["image"])
 image = imutils.resize(image, width=600)
+image = face_alignment(image, args["visualization"])
 (h, w) = image.shape[:2]
+
 # construct a blob from the image
 imageBlob = cv2.dnn.blobFromImage(
 	cv2.resize(image, (300, 300)), 1.0, (300, 300),
