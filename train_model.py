@@ -42,4 +42,4 @@ f = open(args["le"], "wb")
 f.write(pickle.dumps(le))
 f.close()
 
-lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")
+lg.info(f"Program ended within {round(time.time()-start,2)} seconds.")

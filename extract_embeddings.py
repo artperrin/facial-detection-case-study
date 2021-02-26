@@ -115,4 +115,4 @@ f = open(args["embeddings"], "wb")
 f.write(pickle.dumps(data))
 f.close()
 
-lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")
+lg.info(f"Program ended within {round(time.time()-start,2)} seconds.")

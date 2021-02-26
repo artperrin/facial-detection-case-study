@@ -10,7 +10,6 @@ import time
 
 lg.getLogger().setLevel(lg.INFO)
 
-start = time.time()
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
@@ -27,6 +26,7 @@ ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
 args = vars(ap.parse_args())
 
+start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
 protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
@@ -99,4 +99,4 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 cv2.imwrite("output_image.jpg", image)
 
-lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")
+lg.info(f"Program ended within {round(time.time()-start, 2)} seconds.")
