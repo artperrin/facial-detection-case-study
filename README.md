@@ -44,12 +44,12 @@ In this section I will write the different steps of my work.
 
 ### Firstly 
 
-I started with a simple database containing 30 pictures of Emma Stone, as much of Ryan Gosling, and 30 pictures of different celebrities labeled as "unknown". The `extract_embeddings.py` script firstly creates embeddings, which are vectors describing the "face's properties", then a Support Vector Machine model is trained to classify the celebrities.
+I started with a simple database containing 30 pictures of Emma Stone, as much of Ryan Gosling, and 30 pictures of different celebrities labeled as "unknow". The `extract_embeddings.py` script firstly creates embeddings, which are vectors describing the "face's properties", then a Support Vector Machine model is trained to classify the celebrities.
 It shows some good results (see the example above), but there are some errors : the results seem to be quite sensitive to the face's alignment.
 
 ![face alignment problem](./readme_figures/face_alignment_problem.jpg)
 
-Moreover, the model seems to struggle more with female faces, as quite a lot of female "unknown" faces are classified as Emma Stone's.
+Moreover, the model seems to struggle more with female faces, as quite a lot of female "unknow" faces are classified as Emma Stone's.
 
 ![false stone detected](./readme_figures/false_stone.jpg)
 
@@ -57,7 +57,7 @@ In the future, I shall expand my database for each class and implement a face al
 
 ### Secondly
 
-After having implemented a `face_alignment.py` program, I trained the model and run the tests on a total of 45 images:
+After having implemented a `face_alignment.py` program, I trained the model and ran tests on a total of 45 images:
 
 |True positive|True negative|False positive|False negative|
 | :----- | :----: | :----: | ------:|
@@ -81,9 +81,9 @@ True positive|True negative|False positive|False negative|
 | :----- | :----: | :---: | ------:|
 | 26.6 % | 53.3 % | 2.1 % | 17.7 % |
 
-There are less true and false positives than before, mostly because the dataset is unbalanced and the model became more _sensitive_ to our actors, it results on better "unknown" predictions but less true positives.
+There are less true and false positives than before, mostly because the dataset is unbalanced and the model became more _sensitive_ to our actors, it results on better "unknow" predictions but less true positives.
 
-***Edit: I added a couple more pictures of "unknown", re-trained the model and got these results:***
+***Edit: I added a couple more pictures of "unknow", re-trained the model and got these results:***
 
 |True positive|True negative|False positive|False negative|
 | :----- | :----: | :---: | ------:|
@@ -102,8 +102,8 @@ After expanding a little bit both my training and testing dataset, I tried diffe
 |      Gaussian Process    | 78.2 % |
 | SVC with gamma parameter | 84.8 % |
 
-The training dataset is : 11 elements of Gosling, 12 elements of Stone, 23 elements of unknow.
-It seems that the last method does better results. It tested different parameters of gamma:
+The training dataset is: 11 elements of Gosling, 12 elements of Stone, 23 elements of "unknow".
+It seems that the last method does better results, so I tested different parameters for gamma:
 
 |  Gamma value   |Accurary|
 | :------------- | -----: |
