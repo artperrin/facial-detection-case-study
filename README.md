@@ -13,7 +13,7 @@ This repository contains:
 * a recognize.py script to run the model on an image,
 * a test_model.py script to run the model on multiple images (almost strict copy of the previous script), 
 * an `/assets` folder where one can find the models used for embeddings extractions and the face_alignment.py script imported in the main scripts,
-* an `/ouput` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the recognize.py script).
+* an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the recognize.py script).
 
 First of all, the user must install the needed libraries by running the command line:
 ```sh
