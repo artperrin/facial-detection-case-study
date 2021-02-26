@@ -50,7 +50,17 @@ ap.add_argument(
     default=False,
     help="if the user wants to visualize each results",
 )
+ap.add_argument(
+    "-e",
+    "--export",
+    type=str,
+    default=None,
+    help="path to .csv export",
+)
 args = vars(ap.parse_args())
+
+if args["export"] is not None:
+    FILE = []
 
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
@@ -159,9 +169,13 @@ for imageName in imagePaths:
                 else:
                     FN += 1
 
+            if args["export"] is not None:
+                line = f"Original {nameTrue} | Predicted {namePredict} \n"
+                FILE.append(line)
+
     status = f"Image {count} out of {len(imagePaths)}."
 
-    if args["visualization"]:
+    if args["visualization"] is not None:
         cv2.destroyAllWindows()
 
     count += 1
@@ -182,3 +196,8 @@ lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives.")
 lg.info(
     f"Overall accuracy of the model : {round(TP/NB_FACES*100,1)+round(TN/NB_FACES*100,1)} %."
 )
+
+if args["export"] is not None:
+    with open(args["export"]+"/results.txt","w") as file:
+        file.writelines(FILE) 
+

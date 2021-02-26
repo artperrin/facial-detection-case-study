@@ -36,6 +36,8 @@ The user can use the test_model.py script to...test his model (or the one I prov
 
 ***Into the `/test` folder, put one folder for each person to be detected and name it after the same label as the one used by the model.***
 
+The testing dataset I used is unbalanced as the main trouble seems to be false positives, so there are more "unknown" persons in the dataset. But I tried to gather some look-alikes, like Johannes Laschet for testing the Ryan Gosling's class accuracy (and the same for Emma Stone).
+
 ## News
 
 In this section I will write the different steps of my work.
@@ -100,6 +102,7 @@ After expanding a little bit both my training and testing dataset, I tried diffe
 |      Gaussian Process    | 78.2 % |
 | SVC with gamma parameter | 84.8 % |
 
+The training dataset is : 11 elements of Gosling, 12 elements of Stone, 23 elements of unknow.
 It seems that the last method does better results. It tested different parameters of gamma:
 
 |  Gamma value   |Accurary|
@@ -111,6 +114,8 @@ It seems that the last method does better results. It tested different parameter
 |      100       | 26.1 % |
 
 I chose to stay with the automatic mode, but I'll need to do more tests if the dataset is changed.
+
+***Edit: I added an export option in the test_model.py script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gahter even more.***
 
 ## Credits
 
