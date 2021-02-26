@@ -47,7 +47,6 @@ lg.info("Loading image and applying detection...")
 # maintaining the aspect ratio), and then grab the image dimensions
 image = cv2.imread(args["image"])
 image = imutils.resize(image, width=600)
-image = face_alignment(image, args["visualization"])
 (h, w) = image.shape[:2]
 
 # construct a blob from the image
@@ -76,7 +75,8 @@ for i in range(0, detections.shape[2]):
 		# ensure the face width and height are sufficiently large
 		if fW < 20 or fH < 20:
 			continue
-
+		
+		face = face_alignment(face, args["visualization"])
         # construct a blob for the face ROI, then pass the blob
 		# through our face embedding model to obtain the 128-d
 		# quantification of the face

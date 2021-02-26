@@ -51,7 +51,6 @@ count=1
 for imageName in imagePaths:
 	image = cv2.imread(imageName)
 	image = imutils.resize(image, width=600)
-	image = face_alignment(image, args["visualization"])
 	(h, w) = image.shape[:2]
 	# construct a blob from the image
 	imageBlob = cv2.dnn.blobFromImage(
@@ -79,6 +78,7 @@ for imageName in imagePaths:
 			if fW < 20 or fH < 20:
 				continue
 
+			face = face_alignment(face, args["visualization"])
 			# construct a blob for the face ROI, then pass the blob
 			# through our face embedding model to obtain the 128-d
 			# quantification of the face

@@ -87,19 +87,17 @@ def face_alignment(image, visu):
     visu : boolean
         if the user needs to visualize the transform
     """
-    detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(predictorPath)
     fa = FaceAligner(predictor, desiredFaceWidth=256)
     image = imutils.resize(image, width=800)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # detect faces in the grayscale image
-    rect = detector(gray, 1)
-
+    size = image.shape
+    rect = dlib.rectangle(0, 0, size[1], size[0])
     # extract the ROI of the *original* face, then align the face
 	# using facial landmarks
-    (x, y, w, h) = rect_to_bb(rect[0])
-    faceOrig = imutils.resize(image[y:y + h, x:x + w], width=256)
-    faceAligned = fa.align(image, gray, rect[0])
+    (x, y, w, h) = rect_to_bb(rect)
+    faceOrig = imutils.resize(image, width=256)
+    faceAligned = fa.align(image, gray, rect)
 	# display the output images
     if visu:
         cv2.imshow("Original", faceOrig)

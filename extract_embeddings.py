@@ -58,10 +58,8 @@ for (i, imagePath) in enumerate(imagePaths):
 	# dimensions
 	image = cv2.imread(imagePath)
 	image = imutils.resize(image, width=600)
+	
 	(h, w) = image.shape[:2]
-
-	# pre-process the image by running face alignment
-	image = face_alignment(image, args["visualization"])
 
     # construct a blob from the image
 	imageBlob = cv2.dnn.blobFromImage(
@@ -71,20 +69,19 @@ for (i, imagePath) in enumerate(imagePaths):
 	# faces in the input image
 	detector.setInput(imageBlob)
 	detections = detector.forward()
-
     # ensure at least one face was found
 	if len(detections) > 0:
 		# we're making the assumption that each image has only ONE
 		# face, so find the bounding box with the largest probability
-		i = np.argmax(detections[0, 0, :, 2])
-		confidence = detections[0, 0, i, 2]
+		j = np.argmax(detections[0, 0, :, 2])
+		confidence = detections[0, 0, j, 2]
 		# ensure that the detection with the largest probability also
 		# means our minimum probability test (thus helping filter out
 		# weak detections)
 		if confidence > args["confidence"]:
 			# compute the (x, y)-coordinates of the bounding box for
 			# the face
-			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+			box = detections[0, 0, j, 3:7] * np.array([w, h, w, h])
 			(startX, startY, endX, endY) = box.astype("int")
 			# extract the face ROI and grab the ROI dimensions
 			face = image[startY:endY, startX:endX]
@@ -92,7 +89,9 @@ for (i, imagePath) in enumerate(imagePaths):
 			# ensure the face width and height are sufficiently large
 			if fW < 20 or fH < 20:
 				continue
-
+			
+			# pre-process the image by running face alignment
+			face = face_alignment(face, args["visualization"])
             # construct a blob for the face ROI, then pass the blob
 			# through our face embedding model to obtain the 128-d
 			# quantification of the face

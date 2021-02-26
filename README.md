@@ -63,6 +63,16 @@ I will now search for more data to train the model and run another test.
 
 ![corrected](./readme_figures/fixed.jpg)
 
+### Thirdly
+
+After adding 10 pictures of both Emma Stone and Ryan Gosling, I trained the model again. Moreover, I modified the face_alignment.py script, as it induced a face detection on the already detected face given as input. Here are the results on the same testing data as previously:
+
+True positive|True negative|False positive|False negative|
+| :----- | :----: | :---: | ------:|
+| 26.6 % | 53.3 % | 2.1 % | 17.7 % |
+
+There are less true and false positives than before, mostly because the dataset is unbalanced and the model became more _sensitive_ to our actors, it results on better "unknown" predictions but less true positives.
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.
