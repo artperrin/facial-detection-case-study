@@ -1,5 +1,6 @@
 # import the necessary packages
 from assets.face_alignment import face_alignment
+from collections import Counter
 from imutils import paths
 import numpy as np
 import logging as lg
@@ -79,6 +80,15 @@ TN = 0
 FP = 0
 FN = 0
 
+# testing dataset description
+lg.info('Describing dataset...')
+classes = [p.split(os.path.sep)[-2] for p in imagePaths]
+distinct = (Counter(classes).keys())
+
+for cl in distinct:
+    lg.info(f'There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class.')
+
+lg.info('Opening images and making predictions...')
 # loop over the image paths
 for imageName in imagePaths:
     image = cv2.imread(imageName)
