@@ -7,11 +7,17 @@ import numpy as np
 import cv2
 import dlib
 
-predictorPath = './assets/shape_predictor_68_face_landmarks.dat'
+predictorPath = "./assets/shape_predictor_68_face_landmarks.dat"
+
 
 class FaceAligner:
-    def __init__(self, predictor, desiredLeftEye=(0.35, 0.35),
-        desiredFaceWidth=256, desiredFaceHeight=None):
+    def __init__(
+        self,
+        predictor,
+        desiredLeftEye=(0.35, 0.35),
+        desiredFaceWidth=256,
+        desiredFaceHeight=None,
+    ):
         # store the facial landmark predictor, desired output left
         # eye position, and desired output face width + height
         self.predictor = predictor
@@ -22,7 +28,7 @@ class FaceAligner:
         # desired face width (normal behavior)
         if self.desiredFaceHeight is None:
             self.desiredFaceHeight = self.desiredFaceWidth
-        
+
     def align(self, image, gray, rect):
         # convert the landmark (x, y)-coordinates to a NumPy array
         shape = self.predictor(gray, rect)
@@ -47,19 +53,22 @@ class FaceAligner:
         # image to the ratio of distance between eyes in the
         # *desired* image
         dist = np.sqrt((dX ** 2) + (dY ** 2))
-        desiredDist = (desiredRightEyeX - self.desiredLeftEye[0])
+        desiredDist = desiredRightEyeX - self.desiredLeftEye[0]
         desiredDist *= self.desiredFaceWidth
         scale = desiredDist / dist
         # compute center (x, y)-coordinates (i.e., the median point)
         # between the two eyes in the input image
-        eyesCenter = ((leftEyeCenter[0] + rightEyeCenter[0]) // 2, (leftEyeCenter[1] + rightEyeCenter[1]) // 2)
+        eyesCenter = (
+            (leftEyeCenter[0] + rightEyeCenter[0]) // 2,
+            (leftEyeCenter[1] + rightEyeCenter[1]) // 2,
+        )
         # grab the rotation matrix for rotating and scaling the face
         M = cv2.getRotationMatrix2D(eyesCenter, angle, scale)
         # update the translation component of the matrix
         tX = self.desiredFaceWidth * 0.5
         tY = self.desiredFaceHeight * self.desiredLeftEye[1]
-        M[0, 2] += (tX - eyesCenter[0])
-        M[1, 2] += (tY - eyesCenter[1])
+        M[0, 2] += tX - eyesCenter[0]
+        M[1, 2] += tY - eyesCenter[1]
 
         # apply the affine transformation
         (w, h) = (self.desiredFaceWidth, self.desiredFaceHeight)
@@ -76,6 +85,7 @@ class FaceAligner:
     visu : boolean
         boolean corresponding to visualization step
     """
+
 
 def face_alignment(image, visu):
     """initialize dlib's face detector and aligns the face
@@ -94,11 +104,11 @@ def face_alignment(image, visu):
     size = image.shape
     rect = dlib.rectangle(0, 0, size[1], size[0])
     # extract the ROI of the *original* face, then align the face
-	# using facial landmarks
+    # using facial landmarks
     (x, y, w, h) = rect_to_bb(rect)
     faceOrig = imutils.resize(image, width=256)
     faceAligned = fa.align(image, gray, rect)
-	# display the output images
+    # display the output images
     if visu:
         cv2.imshow("Original", faceOrig)
         cv2.imshow("Aligned", faceAligned)

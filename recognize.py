@@ -13,27 +13,51 @@ lg.getLogger().setLevel(lg.INFO)
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", required=True,
-	help="path to input image")
-ap.add_argument("-d", "--detector", default='./assets/face_detection_model',
-	help="path to OpenCV's deep learning face detector")
-ap.add_argument("-m", "--embedding-model", default='./assets/openface.nn4.small2.v1.t7',
-	help="path to OpenCV's deep learning face embedding model")
-ap.add_argument("-r", "--recognizer", default='./output/recognizer.pickle',
-	help="path to model trained to recognize faces")
-ap.add_argument("-l", "--le", default='./output/le.pickle',
-	help="path to label encoder")
-ap.add_argument("-c", "--confidence", type=float, default=0.5,
-	help="minimum probability to filter weak detections")
-ap.add_argument("-v", "--visualization", type=bool, default=False,
-	help="if the user wants to visualize the face alignment")	
+ap.add_argument("-i", "--image", required=True, help="path to input image")
+ap.add_argument(
+    "-d",
+    "--detector",
+    default="./assets/face_detection_model",
+    help="path to OpenCV's deep learning face detector",
+)
+ap.add_argument(
+    "-m",
+    "--embedding-model",
+    default="./assets/openface.nn4.small2.v1.t7",
+    help="path to OpenCV's deep learning face embedding model",
+)
+ap.add_argument(
+    "-r",
+    "--recognizer",
+    default="./output/recognizer.pickle",
+    help="path to model trained to recognize faces",
+)
+ap.add_argument(
+    "-l", "--le", default="./output/le.pickle", help="path to label encoder"
+)
+ap.add_argument(
+    "-c",
+    "--confidence",
+    type=float,
+    default=0.5,
+    help="minimum probability to filter weak detections",
+)
+ap.add_argument(
+    "-v",
+    "--visualization",
+    type=bool,
+    default=False,
+    help="if the user wants to visualize the face alignment",
+)
 args = vars(ap.parse_args())
 
 start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
 protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-modelPath = os.path.sep.join([args["detector"],"res10_300x300_ssd_iter_140000.caffemodel"])
+modelPath = os.path.sep.join(
+    [args["detector"], "res10_300x300_ssd_iter_140000.caffemodel"]
+)
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # load our serialized face embedding model from disk
 lg.info("Loading face recognizer...")
@@ -51,8 +75,13 @@ image = imutils.resize(image, width=600)
 
 # construct a blob from the image
 imageBlob = cv2.dnn.blobFromImage(
-	cv2.resize(image, (300, 300)), 1.0, (300, 300),
-	(104.0, 177.0, 123.0), swapRB=False, crop=False)
+    cv2.resize(image, (300, 300)),
+    1.0,
+    (300, 300),
+    (104.0, 177.0, 123.0),
+    swapRB=False,
+    crop=False,
+)
 # apply OpenCV's deep learning-based face detector to localize
 # faces in the input image
 detector.setInput(imageBlob)
@@ -60,43 +89,44 @@ detections = detector.forward()
 
 # loop over the detections
 for i in range(0, detections.shape[2]):
-	# extract the confidence (i.e., probability) associated with the
-	# prediction
-	confidence = detections[0, 0, i, 2]
-	# filter out weak detections
-	if confidence > args["confidence"]:
-		# compute the (x, y)-coordinates of the bounding box for the
-		# face
-		box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-		(startX, startY, endX, endY) = box.astype("int")
-		# extract the face ROI
-		face = image[startY:endY, startX:endX]
-		(fH, fW) = face.shape[:2]
-		# ensure the face width and height are sufficiently large
-		if fW < 20 or fH < 20:
-			continue
-		
-		face = face_alignment(face, args["visualization"])
+    # extract the confidence (i.e., probability) associated with the
+    # prediction
+    confidence = detections[0, 0, i, 2]
+    # filter out weak detections
+    if confidence > args["confidence"]:
+        # compute the (x, y)-coordinates of the bounding box for the
+        # face
+        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+        (startX, startY, endX, endY) = box.astype("int")
+        # extract the face ROI
+        face = image[startY:endY, startX:endX]
+        (fH, fW) = face.shape[:2]
+        # ensure the face width and height are sufficiently large
+        if fW < 20 or fH < 20:
+            continue
+
+        face = face_alignment(face, args["visualization"])
         # construct a blob for the face ROI, then pass the blob
-		# through our face embedding model to obtain the 128-d
-		# quantification of the face
-		faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255, (96, 96),
-			(0, 0, 0), swapRB=True, crop=False)
-		embedder.setInput(faceBlob)
-		vec = embedder.forward()
-		# perform classification to recognize the face
-		preds = recognizer.predict_proba(vec)[0]
-		j = np.argmax(preds)
-		proba = preds[j]
-		name = le.classes_[j]
+        # through our face embedding model to obtain the 128-d
+        # quantification of the face
+        faceBlob = cv2.dnn.blobFromImage(
+            face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False
+        )
+        embedder.setInput(faceBlob)
+        vec = embedder.forward()
+        # perform classification to recognize the face
+        preds = recognizer.predict_proba(vec)[0]
+        j = np.argmax(preds)
+        proba = preds[j]
+        name = le.classes_[j]
         # draw the bounding box of the face along with the associated
-		# probability
-		text = "{}: {:.2f}%".format(name, proba * 100)
-		y = startY - 10 if startY - 10 > 10 else startY + 10
-		cv2.rectangle(image, (startX, startY), (endX, endY),
-			(0, 0, 255), 2)
-		cv2.putText(image, text, (startX, y),
-			cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+        # probability
+        text = "{}: {:.2f}%".format(name, proba * 100)
+        y = startY - 10 if startY - 10 > 10 else startY + 10
+        cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
+        cv2.putText(
+            image, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2
+        )
 
 # show the output image
 cv2.imshow("Image", image)
