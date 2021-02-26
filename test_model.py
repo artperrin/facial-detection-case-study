@@ -166,6 +166,5 @@ if NB_FACES < len(imagePaths):
 lg.info(f"Results of the test: {round(TP/NB_FACES*100,1)} % true positives,")
 lg.info(f"-------------------: {round(TN/NB_FACES*100,1)} % true negatives,")
 lg.info(f"-------------------: {round(FP/NB_FACES*100,1)} % false positives,")
-lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives,")
-lg.info(f"on {NB_FACES} faces.")
+lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives.")
 lg.info(f"Overall accuracy of the model : {round(TP/NB_FACES*100,1)+round(TN/NB_FACES*100,1)} %.")
