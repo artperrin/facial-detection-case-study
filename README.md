@@ -30,6 +30,12 @@ and all the arguments are described with the command line:
 $ python path/to/script.py --help
 ```
 
+## Test the model
+
+The user can use the test_model.py script to...test his model (or the one I provided) on his own images. This folder must have a precise structure:
+
+***Into the `/test` folder, put one folder for each person to be detected and name it after the same label as the one used by the model.***
+
 ## News
 
 In this section I will write the different steps of my work.

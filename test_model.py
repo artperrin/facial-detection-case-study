@@ -26,7 +26,7 @@ ap.add_argument("-l", "--le", default='./output/le.pickle',
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
 ap.add_argument("-v", "--visualization", type=bool, default=False,
-	help="if the user wants to visualize the face alignment")
+	help="if the user wants to visualize each results")
 args = vars(ap.parse_args())
 
 # load our serialized face detector from disk
@@ -46,10 +46,19 @@ lg.info("Loading image and applying detection...")
 # maintaining the aspect ratio), and then grab the image dimensions
 testPath = args["image"]
 imagePaths = list(paths.list_images(testPath))
-count=1
+
+count = 1
+NB_FACES = 0
+
+TP = 0
+TN = 0
+FP = 0
+FN = 0
+
 # loop over the image paths
 for imageName in imagePaths:
 	image = cv2.imread(imageName)
+	nameTrue = imageName.split(os.path.sep)[-2]
 	image = imutils.resize(image, width=600)
 	(h, w) = image.shape[:2]
 	# construct a blob from the image
@@ -60,7 +69,6 @@ for imageName in imagePaths:
 	# faces in the input image
 	detector.setInput(imageBlob)
 	detections = detector.forward()
-
 	# loop over the detections
 	for i in range(0, detections.shape[2]):
 		# extract the confidence (i.e., probability) associated with the
@@ -78,7 +86,7 @@ for imageName in imagePaths:
 			if fW < 20 or fH < 20:
 				continue
 
-			face = face_alignment(face, args["visualization"])
+			face = face_alignment(face, visu=False)
 			# construct a blob for the face ROI, then pass the blob
 			# through our face embedding model to obtain the 128-d
 			# quantification of the face
@@ -90,18 +98,49 @@ for imageName in imagePaths:
 			preds = recognizer.predict_proba(vec)[0]
 			j = np.argmax(preds)
 			proba = preds[j]
-			name = le.classes_[j]
+			namePredict = le.classes_[j]
+			NB_FACES+=1
+
+			# test if the result is a true positive/negative or a false positive/negative
+			if namePredict==nameTrue:
+				if namePredict=='unknow':
+					TN+=1
+				else:
+					TP+=1
+			else:
+				if nameTrue=='unknow':
+					FP+=1
+				else:
+					FN+=1
+
 			# draw the bounding box of the face along with the associated
 			# probability
-			text = f"{name}: {(proba * 100):.2f}%"
-			y = startY - 10 if startY - 10 > 10 else startY + 10
-			cv2.rectangle(image, (startX, startY), (endX, endY),
-				(0, 0, 255), 2)
-			cv2.putText(image, text, (startX, y),
-				cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+			if args["visualization"]:
+				text = f"{namePredict}: {(proba * 100):.2f}%"
+				y = startY - 10 if startY - 10 > 10 else startY + 10
+				cv2.rectangle(image, (startX, startY), (endX, endY),
+					(0, 0, 255), 2)
+				cv2.putText(image, text, (startX, y),
+					cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
-	# show the output image
-	cv2.imshow(f"Image {count} out of {len(imagePaths)}", image)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+	status = f"Image {count} out of {len(imagePaths)}"
+
+	if args["visualization"]:
+		# show the output image
+		cv2.imshow(status, image)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+
 	count+=1
+	print(status, end='\r', flush=True)
+
+print('', flush=True)
+
+if NB_FACES < len(imagePaths):
+	lg.warning(f"Not all faces have been detected, {len(imagePaths)-NB_FACES+1} missing.")
+
+lg.info(f"Results of the test: {round(TP/NB_FACES*100,1)} true positives,")
+lg.info(f"-------------------: {round(TN/NB_FACES*100,1)} true negatives,")
+lg.info(f"-------------------: {round(FP/NB_FACES*100,1)} false positives,")
+lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} false negatives,")
+lg.info(f"on {NB_FACES} faces.")
