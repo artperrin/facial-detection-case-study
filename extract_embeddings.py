@@ -1,5 +1,6 @@
 # import the necessary packages
 from imutils import paths
+from assets.face_alignment import face_alignment
 import logging as lg
 import numpy as np
 import argparse
@@ -7,6 +8,7 @@ import imutils
 import pickle
 import cv2
 import os
+import time
 
 lg.getLogger().setLevel(lg.INFO)
 
@@ -22,8 +24,11 @@ ap.add_argument("-m", "--embedding-model", default='./assets/openface.nn4.small2
 	help="path to OpenCV's deep learning face embedding model")
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
+ap.add_argument("-v", "--visualization", type=bool, default=False,
+	help="if the user wants to visualize the face alignment")
 args = vars(ap.parse_args())
 
+start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
 protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
@@ -43,10 +48,10 @@ knownNames = []
 # initialize the total number of faces processed
 total = 0
 
+lg.info("Processing images...")
 # loop over the image paths
 for (i, imagePath) in enumerate(imagePaths):
 	# extract the person name from the image path
-	print(f"Processing image {i+1}/{len(imagePaths)}", end='\r', flush=True)
 	name = imagePath.split(os.path.sep)[-2]
 	# load the image, resize it to have a width of 600 pixels (while
 	# maintaining the aspect ratio), and then grab the image
@@ -54,6 +59,9 @@ for (i, imagePath) in enumerate(imagePaths):
 	image = cv2.imread(imagePath)
 	image = imutils.resize(image, width=600)
 	(h, w) = image.shape[:2]
+
+	# pre-process the image by running face alignment
+	image = face_alignment(image, args["visualization"])
 
     # construct a blob from the image
 	imageBlob = cv2.dnn.blobFromImage(
@@ -97,6 +105,7 @@ for (i, imagePath) in enumerate(imagePaths):
 			knownNames.append(name)
 			knownEmbeddings.append(vec.flatten())
 			total += 1
+	print(f"{i+1}/{len(imagePaths)} processed...", end='\r', flush=True)
 print('', end='\n', flush=True)
 
 # dump the facial embeddings + names to disk
@@ -105,3 +114,5 @@ data = {"embeddings": knownEmbeddings, "names": knownNames}
 f = open(args["embeddings"], "wb")
 f.write(pickle.dumps(data))
 f.close()
+
+lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")

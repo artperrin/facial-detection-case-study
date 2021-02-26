@@ -20,7 +20,7 @@ $ pip install -r requirements.txt
 
 Each of the scripts are to be runned using the command line:
 ```sh
-$ python path/to/script.py -args
+$ python path/to/script.py --args
 ```
 
 and all the arguments are described with the command line:
@@ -45,7 +45,19 @@ Moreover, the model seems to struggle more with female faces, as quite a lot of 
 
 In the future, I shall expand my database for each class and implement a face alignment script to tackle the related trouble.
 
-## How to use the scripts
+### Secondly
+
+After having implemented a face_alignment.py program, I trained the model and run the tests on a total of 45 images:
+
+|True positive|True negative|False positive|False negative|
+| :----- | :----: | :----: | ------:|
+| 28.8 % | 37.8 % | 17.8 % | 15.6 % |
+
+As the results seems to be better, I've encountered some unusual behaviour: some female faces have been detected as Ryan Gosling's.
+
+![false positive](./readme_figures/weird_false_positive.jpg)
+
+I will now search for more data to train the model and run another test.
 
 ## Credits
 

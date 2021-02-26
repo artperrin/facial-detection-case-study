@@ -2,4 +2,4 @@ venv
 dataset
 test
 .vscode
-trash
+__pycache__

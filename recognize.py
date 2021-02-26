@@ -6,9 +6,11 @@ import imutils
 import pickle
 import cv2
 import os
+import time
 
 lg.getLogger().setLevel(lg.INFO)
 
+start = time.time()
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
@@ -95,4 +97,6 @@ for i in range(0, detections.shape[2]):
 cv2.imshow("Image", image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-cv2.imwrite("output.jpg", image)
+cv2.imwrite("output_image.jpg", image)
+
+lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")

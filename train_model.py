@@ -4,6 +4,7 @@ from sklearn.svm import SVC
 import logging as lg
 import argparse
 import pickle
+import time
 
 lg.getLogger().setLevel(lg.INFO)
 
@@ -17,6 +18,7 @@ ap.add_argument("-l", "--le", default='./output/le.pickle',
 	help="path to output label encoder")
 args = vars(ap.parse_args())
 
+start = time.time()
 # load the face embeddings
 lg.info("Loading face embeddings...")
 data = pickle.loads(open(args["embeddings"], "rb").read())
@@ -39,3 +41,5 @@ f.close()
 f = open(args["le"], "wb")
 f.write(pickle.dumps(le))
 f.close()
+
+lg.info(f"Program ended within {round(time.time()-start), 2} seconds.")
