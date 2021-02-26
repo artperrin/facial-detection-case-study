@@ -11,7 +11,9 @@ This repository contains:
 * a extract_embeddings.py script to extract embeddings from the dataset,
 * a train_model.py script to train the SVM model to classify the subjects,
 * a recognize.py script to run the model on an image,
-* a test_model.py script to run the model on multiple images (almost strict copy of the previous script).
+* a test_model.py script to run the model on multiple images (almost strict copy of the previous script), 
+* an `/assets` folder where one can find the models used for embeddings extractions and the face_alignment.py script imported in the main scripts,
+* an `/ouput` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the recognize.py script).
 
 First of all, the user must install the needed libraries by running the command line:
 ```sh
@@ -72,6 +74,14 @@ True positive|True negative|False positive|False negative|
 | 26.6 % | 53.3 % | 2.1 % | 17.7 % |
 
 There are less true and false positives than before, mostly because the dataset is unbalanced and the model became more _sensitive_ to our actors, it results on better "unknown" predictions but less true positives.
+
+***Edit: I added a couple more pictures of "unknown", re-trained the model and got these results:***
+
+True positive|True negative|False positive|False negative|
+| :----- | :----: | :---: | ------:|
+| 44.4 % | 40 % | 15.6 % | 0 % (!!) |
+
+***The model seems to be working quite well, having an accuracy of about 85%. I will try to get even more data to see if it can be improved.***
 
 ## Credits
 
