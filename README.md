@@ -8,10 +8,10 @@ As an example, I used pictures of celebrities.
 ![example](./readme_figures/output.jpg)
 
 This repository contains:
-* a extract_embeddings.py script to extract embeddings from the dataset,
-* a train_model.py script to train the SVM model to classify the subjects,
-* a recognize.py script to run the model on an image,
-* a test_model.py script to run the model on multiple images (almost strict copy of the previous script), 
+* a `extract_embeddings.py` script to extract embeddings from the dataset,
+* a `train_model.py` script to train the SVM model to classify the subjects,
+* a `recognize.py` script to run the model on an image,
+* a `test_model.py` script to run the model on multiple images (almost strict copy of the previous script), 
 * an `/assets` folder where one can find the models used for embeddings extractions and the face_alignment.py script imported in the main scripts,
 * an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the recognize.py script).
 
@@ -32,7 +32,7 @@ $ python path/to/script.py --help
 
 ## Test the model
 
-The user can use the test_model.py script to...test his model (or the one I provided) on his own images. This folder must have a precise structure:
+The user can use the `test_model.py` script to...test his model (or the one I provided) on his own images. This folder must have a precise structure:
 
 ***Into the `/test` folder, put one folder for each person to be detected and name it after the same label as the one used by the model.***
 
@@ -44,7 +44,7 @@ In this section I will write the different steps of my work.
 
 ### Firstly 
 
-I started with a simple database containing 30 pictures of Emma Stone, as much of Ryan Gosling, and 30 pictures of different celebrities labeled as "unknown". The extract_embeddings.py script firstly creates embeddings, which are vectors describing the "face's properties", then a Support Vector Machine model is trained to classify the celebrities.
+I started with a simple database containing 30 pictures of Emma Stone, as much of Ryan Gosling, and 30 pictures of different celebrities labeled as "unknown". The `extract_embeddings.py` script firstly creates embeddings, which are vectors describing the "face's properties", then a Support Vector Machine model is trained to classify the celebrities.
 It shows some good results (see the example above), but there are some errors : the results seem to be quite sensitive to the face's alignment.
 
 ![face alignment problem](./readme_figures/face_alignment_problem.jpg)
@@ -57,7 +57,7 @@ In the future, I shall expand my database for each class and implement a face al
 
 ### Secondly
 
-After having implemented a face_alignment.py program, I trained the model and run the tests on a total of 45 images:
+After having implemented a `face_alignment.py` program, I trained the model and run the tests on a total of 45 images:
 
 |True positive|True negative|False positive|False negative|
 | :----- | :----: | :----: | ------:|
@@ -75,7 +75,7 @@ I will now search for more data to train the model and run another test.
 
 ### Thirdly
 
-After adding 10 pictures of both Emma Stone and Ryan Gosling, I trained the model again. Moreover, I modified the face_alignment.py script, as it induced a face detection on the already detected face given as input. Here are the results on the same testing data as previously:
+After adding 10 pictures of both Emma Stone and Ryan Gosling, I trained the model again. Moreover, I modified the `face_alignment.py` script, as it induced a face detection on the already detected face given as input. Here are the results on the same testing data as previously:
 
 True positive|True negative|False positive|False negative|
 | :----- | :----: | :---: | ------:|
@@ -93,7 +93,7 @@ There are less true and false positives than before, mostly because the dataset 
 
 ### Fourthly
 
-After expanding a little bit both my training and testing dataset, I tried different classifiers in the train_model.py script:
+After expanding a little bit both my training and testing dataset, I tried different classifiers in the `train_model.py` script:
 
 |          Method          |Accurary|
 | :----------------------- | -----: |
@@ -115,7 +115,7 @@ It seems that the last method does better results. It tested different parameter
 
 I chose to stay with the automatic mode, but I'll need to do more tests if the dataset is changed.
 
-***Edit: I added an export option in the test_model.py script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gahter even more.***
+***Edit: I added an export option in the test_model.py script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gather even more.***
 
 ## Credits
 
