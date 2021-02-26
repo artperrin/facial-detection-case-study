@@ -81,14 +81,16 @@ FP = 0
 FN = 0
 
 # testing dataset description
-lg.info('Describing dataset...')
+lg.info("Describing dataset...")
 classes = [p.split(os.path.sep)[-2] for p in imagePaths]
-distinct = (Counter(classes).keys())
+distinct = Counter(classes).keys()
 
 for cl in distinct:
-    lg.info(f'There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class.')
+    lg.info(
+        f"There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class."
+    )
 
-lg.info('Opening images and making predictions...')
+lg.info("Opening images and making predictions...")
 # loop over the image paths
 for imageName in imagePaths:
     image = cv2.imread(imageName)
@@ -124,9 +126,9 @@ for imageName in imagePaths:
             # ensure the face width and height are sufficiently large
             if fW < 20 or fH < 20:
                 continue
-            
+
             if args["visualization"]:
-                cv2.imshow(nameTrue, cv2.resize(face, (350,500)))
+                cv2.imshow(nameTrue, cv2.resize(face, (350, 500)))
                 cv2.waitKey(1)
 
             face = face_alignment(face, visu=False)
@@ -177,4 +179,6 @@ lg.info(f"Results of the test: {round(TP/NB_FACES*100,1)} % true positives,")
 lg.info(f"-------------------: {round(TN/NB_FACES*100,1)} % true negatives,")
 lg.info(f"-------------------: {round(FP/NB_FACES*100,1)} % false positives,")
 lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives.")
-lg.info(f"Overall accuracy of the model : {round(TP/NB_FACES*100,1)+round(TN/NB_FACES*100,1)} %.")
+lg.info(
+    f"Overall accuracy of the model : {round(TP/NB_FACES*100,1)+round(TN/NB_FACES*100,1)} %."
+)
