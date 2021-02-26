@@ -116,7 +116,7 @@ for imageName in imagePaths:
                 continue
             
             if args["visualization"]:
-                cv2.imshow('current face processed', cv2.resize(face, (350,500)))
+                cv2.imshow(nameTrue, cv2.resize(face, (350,500)))
                 cv2.waitKey(1)
 
             face = face_alignment(face, visu=False)

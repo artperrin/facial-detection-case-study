@@ -83,11 +83,34 @@ There are less true and false positives than before, mostly because the dataset 
 
 ***Edit: I added a couple more pictures of "unknown", re-trained the model and got these results:***
 
-True positive|True negative|False positive|False negative|
+|True positive|True negative|False positive|False negative|
 | :----- | :----: | :---: | ------:|
 | 44.4 % | 40 % | 15.6 % | 0 % (!!) |
 
 ***The model seems to be working quite well, having an accuracy of about 85%. I will try to get even more data to see if it can be improved.***
+
+### Fourthly
+
+After expanding a little bit both my training and testing dataset, I tried different classifiers in the train_model.py script:
+
+|          Method          |Accurary|
+| :----------------------- | -----: |
+|            SVC           | 82.6 % |
+|         AdaBoost         | 78.3 % |
+|      Gaussian Process    | 78.2 % |
+| SVC with gamma parameter | 84.8 % |
+
+It seems that the last method does better results. It tested different parameters of gamma:
+
+|  Gamma value   |Accurary|
+| :------------- | -----: |
+| 'scale' (auto) | 84.8 % |
+|      0.1       | 73.9 % |
+|       2        | 84.8 % |
+|       10       | 84.8 % |
+|      100       | 26.1 % |
+
+I chose to stay with the automatic mode, but I'll need to do more tests if the dataset is changed.
 
 ## Credits
 
