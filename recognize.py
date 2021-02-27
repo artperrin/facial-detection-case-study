@@ -24,7 +24,7 @@ ap.add_argument(
     "-m",
     "--embedding-model",
     default="./assets/openface.nn4.small2.v1.t7",
-    help="path to OpenCV's deep learning face embedding model",
+    help="path to deep learning face embedding model or 'keras' if it was used for embeddings extractions",
 )
 ap.add_argument(
     "-r",
@@ -61,7 +61,31 @@ modelPath = os.path.sep.join(
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # load our serialized face embedding model from disk
 lg.info("Loading face recognizer...")
-embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+if args["embedding_model"] == "keras":
+    from assets import model_bluider as mb
+    from tensorflow.keras.preprocessing.image import load_img, img_to_array
+    from tensorflow.keras.applications.imagenet_utils import preprocess_input
+    from tensorflow.keras.models import Model
+    import tensorflow.keras.backend as K
+    import tensorflow as tf
+
+    # to compute with GPU if available
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    if gpus:
+        try:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices("GPU")
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            print(e)
+    model = mb.build_model()
+    vgg_face = Model(inputs=model.layers[0].input, outputs=model.layers[-2].output)
+else:
+    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+
 # load the actual face recognition model along with the label encoder
 recognizer = pickle.loads(open(args["recognizer"], "rb").read())
 le = pickle.loads(open(args["le"], "rb").read())
@@ -106,16 +130,25 @@ for i in range(0, detections.shape[2]):
             continue
 
         face = face_alignment(face, args["visualization"])
-        # construct a blob for the face ROI, then pass the blob
-        # through our face embedding model to obtain the 128-d
-        # quantification of the face
-        faceBlob = cv2.dnn.blobFromImage(
-            face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False
-        )
-        embedder.setInput(faceBlob)
-        vec = embedder.forward()
-        # perform classification to recognize the face
-        preds = recognizer.predict_proba(vec)[0]
+        if args["embedding_model"] == "keras":
+            face = cv2.resize(face, (224, 224))
+            face = img_to_array(face)
+            face = np.expand_dims(face, axis=0)
+            face = preprocess_input(face)
+            face_encode = vgg_face(face)
+            pred = np.squeeze(K.eval(face_encode))
+            pred = pred.reshape(1, -1)
+        else:
+            # construct a blob for the face ROI, then pass the blob
+            # through our face embedding model to obtain the 128-d
+            # quantification of the face
+            faceBlob = cv2.dnn.blobFromImage(
+                face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False
+            )
+            embedder.setInput(faceBlob)
+            pred = embedder.forward()
+
+        preds = recognizer.predict_proba(pred)[0]
         j = np.argmax(preds)
         proba = preds[j]
         name = le.classes_[j]

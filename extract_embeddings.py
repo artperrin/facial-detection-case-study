@@ -2,11 +2,6 @@
 from imutils import paths
 from assets.face_alignment import face_alignment
 from collections import Counter
-from tensorflow.keras.preprocessing.image import load_img,img_to_array
-from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras.models import Model
-import tensorflow.keras.backend as K
-import tensorflow as tf
 import logging as lg
 import numpy as np
 import argparse
@@ -17,22 +12,6 @@ import os
 import time
 
 lg.getLogger().setLevel(lg.INFO)
-
-# to compute with GPU
-gpus = tf.config.experimental.list_physical_devices(
-    "GPU"
-)
-
-if gpus:
-    try:
-        # Currently, memory growth needs to be the same across GPUs
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
-        # Memory growth must be set before GPUs have been initialized
-        print(e)
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -84,10 +63,28 @@ detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
 # load our serialized face embedding model from disk
 lg.info("loading face recognizer...")
-if args["embedding_model"]=='keras':
+if args["embedding_model"] == "keras":
     from assets import model_bluider as mb
+    from tensorflow.keras.preprocessing.image import load_img, img_to_array
+    from tensorflow.keras.applications.imagenet_utils import preprocess_input
+    from tensorflow.keras.models import Model
+    import tensorflow.keras.backend as K
+    import tensorflow as tf
+
+    # to compute with GPU if available
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    if gpus:
+        try:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices("GPU")
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            print(e)
     model = mb.build_model()
-    vgg_face = Model(inputs=model.layers[0].input,outputs=model.layers[-2].output)
+    vgg_face = Model(inputs=model.layers[0].input, outputs=model.layers[-2].output)
 else:
     embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
 
@@ -170,7 +167,7 @@ for (i, imagePath) in enumerate(imagePaths):
             # pre-process the image by running face alignment
             face = face_alignment(face, False)
 
-            if args["embedding_model"]=='keras':
+            if args["embedding_model"] == "keras":
                 face = cv2.resize(face, (224, 224))
                 face = img_to_array(face)
                 face = np.expand_dims(face, axis=0)
