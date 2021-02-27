@@ -3,4 +3,4 @@ dataset
 test
 .vscode
 __pycache__
-output/aligned_faces
+assets/vgg_face_weights.h5
