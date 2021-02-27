@@ -1,6 +1,7 @@
 # import the necessary packages
 from imutils import paths
 from assets.face_alignment import face_alignment
+from collections import Counter
 import logging as lg
 import numpy as np
 import argparse
@@ -73,6 +74,17 @@ knownNames = []
 # initialize the total number of faces processed
 total = 0
 
+# training dataset description
+lg.info("Describing dataset...")
+classes = [p.split(os.path.sep)[-2] for p in imagePaths]
+distinct = Counter(classes).keys()
+
+for cl in distinct:
+    lg.info(
+        f"There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class."
+    )
+
+
 lg.info("Processing images...")
 # loop over the image paths
 for (i, imagePath) in enumerate(imagePaths):
@@ -139,7 +151,17 @@ for (i, imagePath) in enumerate(imagePaths):
             knownNames.append(name)
             knownEmbeddings.append(vec.flatten())
             total += 1
-    print(f"{i+1}/{len(imagePaths)} processed...", end="\r", flush=True)
+
+    # draw a progress line
+    progress = ''
+    for k in range(30): # length of the progress line
+        if k<=int((i+1)*30/len(imagePaths)):
+            progress+='='
+        else:
+            progress+='.'
+    
+    print(f"{i+1}/{len(imagePaths)} ["+progress+"]", end="\r", flush=True)
+    
     if args["visualization"]:
         cv2.destroyAllWindows()
 

@@ -76,17 +76,6 @@ class FaceAligner:
         # return the aligned face
         return output
 
-    """
-
-    Parameters
-    ----------
-    image : np.array
-        image to be aligned
-    visu : boolean
-        boolean corresponding to visualization step
-    """
-
-
 def face_alignment(image, visu):
     """initialize dlib's face detector and aligns the face
 
@@ -96,6 +85,11 @@ def face_alignment(image, visu):
         image to be aligned (only one face !)
     visu : boolean
         if the user needs to visualize the transform
+
+    Returns
+    -------
+    np.array
+        image of the aligned face
     """
     predictor = dlib.shape_predictor(predictorPath)
     fa = FaceAligner(predictor, desiredFaceWidth=256)

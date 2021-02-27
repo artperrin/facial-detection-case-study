@@ -175,13 +175,19 @@ for imageName in imagePaths:
                 line = f"Original {nameTrue} | Predicted {namePredict} \n"
                 FILE.append(line)
 
-    status = f"Image {count} out of {len(imagePaths)}."
-
     if args["visualization"] is not None:
         cv2.destroyAllWindows()
 
+    # draw a progress line
+    progress = ''
+    for k in range(30): # length of the progress line
+        if k<=int((count)*30/len(imagePaths)):
+            progress+='='
+        else:
+            progress+='.'
+
     count += 1
-    print(status, end="\r", flush=True)
+    print(f"{count}/{len(imagePaths)} ["+progress+"]", end="\r", flush=True)
 
 print("", flush=True)
 
