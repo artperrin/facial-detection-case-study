@@ -3,3 +3,4 @@ dataset
 test
 .vscode
 __pycache__
+output/aligned_faces

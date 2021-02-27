@@ -76,6 +76,7 @@ class FaceAligner:
         # return the aligned face
         return output
 
+
 def face_alignment(image, visu):
     """initialize dlib's face detector and aligns the face
 
@@ -96,6 +97,7 @@ def face_alignment(image, visu):
     image = imutils.resize(image, width=800)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     size = image.shape
+    # rectangle of the image's size since the face is already cropped
     rect = dlib.rectangle(0, 0, size[1], size[0])
     # extract the ROI of the *original* face, then align the face
     # using facial landmarks

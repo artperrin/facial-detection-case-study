@@ -117,6 +117,18 @@ I chose to stay with the automatic mode, but I'll need to do more tests if the d
 
 ***Edit: I added an export option in the `test_model.py` script to see where the errors are, and the only errors are false positives on female faces. Even if there are already more images of women in the "unknow" dataset and in the Emma Stone's, it seems that I need to gather even more.***
 
+### Fifthly
+
+I tried a different deep learning model for embeddings extractions and chose the [VGG-Face implemented for Keras](https://gist.github.com/EncodeTS/6bbe8cb8bebad7a672f0d872561782d9), using the weights one can find in the `/assets` folder (which now contains the `model_builder.py` script to easily create an instance of the model). I modified both `extract_embeddings.py` and `test_model.py` files to handle this model: the user must put the `-m keras` argument in the command line to use it. ***Be careful that the embeddings are not the same shapes as previously (128-D vector with OpenCV and 2622-D vector with VGG-Face) so if one extracts the faces embeddings with Keras, one MUST choose this Keras option again with the `test_model.py` script in order to avoïd a shape error.***
+
+Moreover, I expanded my dataset, which is now composed with : 50 pictures of Ryan Gosling, 100 pictures of Emma Stone and 60 pictures of "unknow". The new test gave the following results (on the same testing dataset):
+
+|True positive|True negative|False positive|False negative|
+| :----- | :----: | :---: | ------:|
+| 50 % | 39.1 % | 10.9 % | 0 % |
+
+So an overall accuracy of 89.1 %, which is better than previously ! A drawback though: even with GPU computation with Tensorflow, the extracting process takes longer than with OpenCV with 0.63 FPS on the test, compared to 0.68 FPS with OpenCV's embeddings extractor (without using GPU).
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.

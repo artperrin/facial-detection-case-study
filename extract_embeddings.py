@@ -2,6 +2,11 @@
 from imutils import paths
 from assets.face_alignment import face_alignment
 from collections import Counter
+from tensorflow.keras.preprocessing.image import load_img,img_to_array
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
+from tensorflow.keras.models import Model
+import tensorflow.keras.backend as K
+import tensorflow as tf
 import logging as lg
 import numpy as np
 import argparse
@@ -12,6 +17,22 @@ import os
 import time
 
 lg.getLogger().setLevel(lg.INFO)
+
+# to compute with GPU
+gpus = tf.config.experimental.list_physical_devices(
+    "GPU"
+)
+
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -34,7 +55,7 @@ ap.add_argument(
     "-m",
     "--embedding-model",
     default="./assets/openface.nn4.small2.v1.t7",
-    help="path to OpenCV's deep learning face embedding model",
+    help="path to deep learning face embedding model or 'keras' if the user wants to use InceptionResNetV2",
 )
 ap.add_argument(
     "-c",
@@ -60,9 +81,15 @@ modelPath = os.path.sep.join(
     [args["detector"], "res10_300x300_ssd_iter_140000.caffemodel"]
 )
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
+
 # load our serialized face embedding model from disk
 lg.info("loading face recognizer...")
-embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+if args["embedding_model"]=='keras':
+    from assets import model_bluider as mb
+    model = mb.build_model()
+    vgg_face = Model(inputs=model.layers[0].input,outputs=model.layers[-2].output)
+else:
+    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
 
 # grab the paths to the input images in our dataset
 lg.info("Quantifying faces...")
@@ -94,8 +121,12 @@ for (i, imagePath) in enumerate(imagePaths):
     # maintaining the aspect ratio), and then grab the image
     # dimensions
     image = cv2.imread(imagePath)
+
     if args["visualization"]:
-        cv2.imshow("current processed image", cv2.resize(image, (500, 500), interpolation = cv2.INTER_AREA))
+        cv2.imshow(
+            "current processed image",
+            cv2.resize(image, (500, 500), interpolation=cv2.INTER_AREA),
+        )
         cv2.waitKey(1)
 
     image = imutils.resize(image, width=600)
@@ -138,30 +169,41 @@ for (i, imagePath) in enumerate(imagePaths):
 
             # pre-process the image by running face alignment
             face = face_alignment(face, False)
-            # construct a blob for the face ROI, then pass the blob
-            # through our face embedding model to obtain the 128-d
-            # quantification of the face
-            faceBlob = cv2.dnn.blobFromImage(
-                face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False
-            )
-            embedder.setInput(faceBlob)
-            vec = embedder.forward()
+
+            if args["embedding_model"]=='keras':
+                face = cv2.resize(face, (224, 224))
+                face = img_to_array(face)
+                face = np.expand_dims(face, axis=0)
+                face = preprocess_input(face)
+                face_encode = vgg_face(face)
+                pred = np.squeeze(K.eval(face_encode))
+                knownEmbeddings.append(pred)
+            else:
+                # construct a blob for the face ROI, then pass the blob
+                # through our face embedding model to obtain the 128-d
+                # quantification of the face
+                faceBlob = cv2.dnn.blobFromImage(
+                    face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False
+                )
+                embedder.setInput(faceBlob)
+                vec = embedder.forward()
+                knownEmbeddings.append(vec.flatten())
+
             # add the name of the person + corresponding face
             # embedding to their respective lists
             knownNames.append(name)
-            knownEmbeddings.append(vec.flatten())
             total += 1
 
     # draw a progress line
-    progress = ''
-    for k in range(30): # length of the progress line
-        if k<=int((i+1)*30/len(imagePaths)):
-            progress+='='
+    progress = ""
+    for k in range(30):  # length of the progress line
+        if k <= int((i + 1) * 30 / len(imagePaths)):
+            progress += "="
         else:
-            progress+='.'
-    
-    print(f"{i+1}/{len(imagePaths)} ["+progress+"]", end="\r", flush=True)
-    
+            progress += "."
+
+    print(f"{i+1}/{len(imagePaths)} [" + progress + "]", end="\r", flush=True)
+
     if args["visualization"]:
         cv2.destroyAllWindows()
 
