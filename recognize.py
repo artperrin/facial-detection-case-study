@@ -117,7 +117,7 @@ for i in range(0, detections.shape[2]):
     # prediction
     confidence = detections[0, 0, i, 2]
     # filter out weak detections
-    if confidence > args["confidence"]:
+    if confidence > 0.5:
         # compute the (x, y)-coordinates of the bounding box for the
         # face
         box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
@@ -152,6 +152,11 @@ for i in range(0, detections.shape[2]):
         j = np.argmax(preds)
         proba = preds[j]
         name = le.classes_[j]
+
+        # test if the model is sure enough, otherwise class the person as unknow
+        if proba <= args["confidence"]:
+            name = "unknow"
+
         # draw the bounding box of the face along with the associated
         # probability
         text = "{}: {:.2f}%".format(name, proba * 100)

@@ -32,11 +32,13 @@ $ python path/to/script.py --help
 
 ## Test the model
 
-The user can use the `test_model.py` script to...test his model (or the one I provided) on his own images. This folder must have a precise structure:
+To run those scripts, I use Python 3.8.3.
+
+The user can use the `test_model.py` script to... test his model ! (or the one I provided) on his own images. This folder must have a precise structure:
 
 ***Into the `/test` folder, put one folder for each person to be detected and name it after the same label as the one used by the model.***
 
-The testing dataset I used is unbalanced as the main trouble seems to be false positives, so there are more "unknown" persons in the dataset. But I tried to gather some look-alikes, like Johannes Laschet for testing the Ryan Gosling's class accuracy (and the same for Emma Stone).
+The testing dataset I used is unbalanced as the main trouble seems to be false positives, so there are more "unknow" persons in the dataset.
 
 ## News
 
@@ -128,6 +130,13 @@ Moreover, I expanded my dataset, which is now composed with : 50 pictures of Rya
 | 50 % | 39.1 % | 10.9 % | 0 % |
 
 So an overall accuracy of 89.1 %, which is better than previously ! A drawback though: even with GPU computation with Tensorflow, the extracting process takes longer than with OpenCV with 0.63 FPS on the test, compared to 0.68 FPS with OpenCV's embeddings extractor (without using GPU).
+
+### Sixthly
+
+I expanded my training and testing dataset again and implemented a filter for the embeddings classification: if the probability returned by the classifier is below the `--confidence` threshold, the face becomes "unknow". After some tests, I finally managed to obtain 100% accuracy (no errors on the testing dataset containing 20 images of Stone, 20 images of Gosling and 60 images of "unknow") with a confidence parameter of 0.8.
+The major drawback of this filter is that it seems to be effective over 0.8 to get rid of the look-alikes, but when the subject wears sunglasses, the program's confidence tends to decrease and gets below the threshold, thus generating a false negative.
+
+![false positive threshold](./readme_figures/glasses.jpg)
 
 ## Credits
 

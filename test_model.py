@@ -1,11 +1,13 @@
 # import the necessary packages
 from assets.face_alignment import face_alignment
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow.keras.models import Model
-import tensorflow.keras.backend as K
+from sklearn.utils import shuffle
+from imutils import build_montages
 from collections import Counter
 from imutils import paths
+import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
 import logging as lg
@@ -60,7 +62,7 @@ ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.5,
+    default=0.7,
     help="minimum probability to filter weak detections",
 )
 ap.add_argument(
@@ -134,6 +136,8 @@ TP = 0
 TN = 0
 FP = 0
 FN = 0
+Errors = []
+positive_confidence = 0
 
 # testing dataset description
 lg.info("Describing dataset...")
@@ -144,6 +148,8 @@ for cl in distinct:
     lg.info(
         f"There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class."
     )
+
+imagePaths = shuffle(imagePaths)
 
 lg.info("Opening images and making predictions...")
 # loop over the image paths
@@ -171,7 +177,7 @@ for imageName in imagePaths:
         # prediction
         confidence = detections[0, 0, i, 2]
         # filter out weak detections
-        if confidence > args["confidence"]:
+        if confidence > 0.5:
             # compute the (x, y)-coordinates of the bounding box for the face
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
@@ -186,6 +192,7 @@ for imageName in imagePaths:
                 cv2.imshow(nameTrue, cv2.resize(face, (350, 500)))
                 cv2.waitKey(1)
 
+            faceCopy = face.copy()
             face = face_alignment(face, visu=False)
 
             if args["embedding_model"] == "keras":
@@ -213,12 +220,17 @@ for imageName in imagePaths:
             namePredict = le.classes_[j]
             NB_FACES += 1
 
+            # test if the model is sure enough, otherwise class the person as unknow
+            if proba <= args["confidence"] and namePredict != "unknow":
+                namePredict = "unknow"
+
             # test if the result is a true positive/negative or a false positive/negative
             if namePredict == nameTrue:
                 if namePredict == "unknow":
                     TN += 1
                 else:
                     TP += 1
+                    positive_confidence += proba
             else:
                 if nameTrue == "unknow":
                     FP += 1
@@ -228,6 +240,21 @@ for imageName in imagePaths:
             if args["export"] is not None:
                 line = f"Original {nameTrue} | Predicted {namePredict} \n"
                 FILE.append(line)
+
+                if nameTrue != namePredict:
+                    montage = [faceCopy.copy()]
+                    text = "{}: {:.2f}%".format(namePredict, proba * 100)
+                    Prd = cv2.putText(
+                        faceCopy,
+                        text,
+                        (10, 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.45,
+                        (0, 0, 255),
+                        2,
+                    )
+                    montage.append(Prd)
+                    Errors.append(build_montages(montage, (400, 500), (2, 1))[0])
 
     if args["visualization"] is not None:
         cv2.destroyAllWindows()
@@ -251,7 +278,9 @@ if NB_FACES < len(imagePaths):
         f"Not all faces have been detected, {len(imagePaths)-NB_FACES+1} missing."
     )
 
-lg.info(f"Results of the test: {round(TP/NB_FACES*100,1)} % true positives,")
+lg.info(
+    f"Results of the test: {round(TP/NB_FACES*100,1)} % true positives with {round(positive_confidence/TP, 2)} mean confidence,"
+)
 lg.info(f"-------------------: {round(TN/NB_FACES*100,1)} % true negatives,")
 lg.info(f"-------------------: {round(FP/NB_FACES*100,1)} % false positives,")
 lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives.")
@@ -262,5 +291,17 @@ lg.info(
 if args["export"] is not None:
     with open(args["export"] + "/results.txt", "w") as file:
         file.writelines(FILE)
+    if len(Errors) > 1:
+        cv2.imwrite(
+            args["export"] + "/errors.jpg",
+            build_montages(
+                Errors, (400, 500), (int((FP + FN) / 2), int((FP + FN) / 2))
+            )[0],
+        )
+    else:
+        try:
+            cv2.imwrite(args["export"] + "/errors.jpg", Errors[0])
+        except:
+            pass
 
 lg.info(f"Program ended within {round(time.time() - start, 2)} seconds.")
