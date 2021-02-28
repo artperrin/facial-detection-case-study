@@ -3,6 +3,7 @@ from assets.face_alignment import face_alignment
 import numpy as np
 import logging as lg
 import argparse
+import config
 import imutils
 import pickle
 import cv2
@@ -11,21 +12,12 @@ import time
 
 lg.getLogger().setLevel(lg.INFO)
 
+# filter by the size of the detected face
+wh_filter = config.SIZE_DETECTION_THRESHOLD
+
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True, help="path to input image")
-ap.add_argument(
-    "-d",
-    "--detector",
-    default="./assets/face_detection_model",
-    help="path to OpenCV's deep learning face detector",
-)
-ap.add_argument(
-    "-m",
-    "--embedding-model",
-    default="./assets/openface.nn4.small2.v1.t7",
-    help="path to deep learning face embedding model or 'keras' if it was used for embeddings extractions",
-)
 ap.add_argument(
     "-r",
     "--recognizer",
@@ -39,7 +31,7 @@ ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.5,
+    default=0.7,
     help="minimum probability to filter weak detections",
 )
 ap.add_argument(
@@ -53,15 +45,16 @@ args = vars(ap.parse_args())
 
 start = time.time()
 # load our serialized face detector from disk
-lg.info("Loading face detector...")
-protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-modelPath = os.path.sep.join(
-    [args["detector"], "res10_300x300_ssd_iter_140000.caffemodel"]
-)
+detectorPath = config.DETECTOR
+protoPath = os.path.sep.join([detectorPath, "deploy.prototxt"])
+modelPath = os.path.sep.join([detectorPath, "res10_300x300_ssd_iter_140000.caffemodel"])
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # load our serialized face embedding model from disk
 lg.info("Loading face recognizer...")
-if args["embedding_model"] == "keras":
+
+embeddings_model = config.EMBEDDINGS
+
+if embeddings_model == "keras":
     from assets import model_bluider as mb
     from tensorflow.keras.preprocessing.image import load_img, img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
@@ -84,7 +77,7 @@ if args["embedding_model"] == "keras":
     model = mb.build_model()
     vgg_face = Model(inputs=model.layers[0].input, outputs=model.layers[-2].output)
 else:
-    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+    embedder = cv2.dnn.readNetFromTorch(embeddings_model)
 
 # load the actual face recognition model along with the label encoder
 recognizer = pickle.loads(open(args["recognizer"], "rb").read())
@@ -126,11 +119,11 @@ for i in range(0, detections.shape[2]):
         face = image[startY:endY, startX:endX]
         (fH, fW) = face.shape[:2]
         # ensure the face width and height are sufficiently large
-        if fW < 20 or fH < 20:
+        if fW < wh_filter or fH < wh_filter:
             continue
 
         face = face_alignment(face, args["visualization"])
-        if args["embedding_model"] == "keras":
+        if embeddings_model == "keras":
             face = cv2.resize(face, (224, 224))
             face = img_to_array(face)
             face = np.expand_dims(face, axis=0)
@@ -170,6 +163,6 @@ for i in range(0, detections.shape[2]):
 cv2.imshow("Image", image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-cv2.imwrite("output_image.jpg", image)
+# cv2.imwrite("output_image.jpg", image) # uncomment this to save the end image
 
 lg.info(f"Program ended within {round(time.time()-start, 2)} seconds.")

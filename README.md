@@ -138,6 +138,42 @@ The major drawback of this filter is that it seems to be effective over 0.8 to g
 
 ![false positive threshold](./readme_figures/glasses.jpg)
 
+### Seventhly
+
+I changed my dataset for my program to recognize a new atress: Lily James. So I added 70 pictures of her, and decreased the number of Emma Stone and Ryan Gosling's images to the same number. Additionnaly, I have now 100 pictures of 'unknow' (each different celebrities).
+
+As for my testing data, I have 50 images of Stone, Gosling and James each, and 130 of 'unknow' (celebrities, sometines a few images of the same).
+
+I also implemented a new script which can be found in the `./assets` folder to perform a `dataset_clean_test.py`. This script is to be run with the command line:
+
+```sh
+$ python dataset_clean_test.py --dataset path/to/dataset
+```
+
+and browse all the images of the dataset counting how many faces it finds on each.
+
+Since it is assumed that, for a training or testing dataset, each image shows only one face, if the program finds more it will display all the incriminated file at the end of execution.
+
+I came across this error, which implied a wrong result during testing:
+
+```
+INFO:root:Loading detector and images...
+INFO:root:Beginning face detections...
+Progress 280 out of 280
+INFO:root:Face detections ended.
+WARNING:root:Dataset not clean, try to increase the weight/height filter or change the incriminated files:
+
+ ERROR file .\test\james\james015.jpg, 2 faces detected !
+
+INFO:root:Program ended within 19.26 seconds.
+```
+
+![two faces detected](./readme_figures/two_faces_detected.jpg)
+
+The error here was with Lily James' earring, but it can be other faces in the background for example.
+
+To finish, I added a new `config.py` file for the user to set his "overall" parameters (like the embeddings method) easier.
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.

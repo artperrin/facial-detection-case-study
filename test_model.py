@@ -4,10 +4,10 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow.keras.models import Model
 from sklearn.utils import shuffle
-from imutils import build_montages
 from collections import Counter
 from imutils import paths
 import tensorflow.keras.backend as K
+import config
 import tensorflow as tf
 import numpy as np
 import logging as lg
@@ -19,6 +19,9 @@ import cv2
 import os
 
 lg.getLogger().setLevel(lg.INFO)
+
+# filter by the size of the detected face
+wh_filter = config.SIZE_DETECTION_THRESHOLD
 
 # to compute with GPU
 gpus = tf.config.experimental.list_physical_devices("GPU")
@@ -37,18 +40,6 @@ if gpus:
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True, help="path to input test image")
-ap.add_argument(
-    "-d",
-    "--detector",
-    default="./assets/face_detection_model",
-    help="path to OpenCV's deep learning face detector",
-)
-ap.add_argument(
-    "-m",
-    "--embedding-model",
-    default="./assets/openface.nn4.small2.v1.t7",
-    help="path to deep learning face embedding model or 'keras' if it was used for embeddings extractions",
-)
 ap.add_argument(
     "-r",
     "--recognizer",
@@ -77,24 +68,26 @@ ap.add_argument(
     "--export",
     type=str,
     default=None,
-    help="path to .csv export",
+    help="path to result log if wanted",
 )
 args = vars(ap.parse_args())
 
 if args["export"] is not None:
-    FILE = []
+    FILE = [f"""# Results log \n Test ran with confidence {args["confidence"]}. \n"""]
 
 start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
-protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-modelPath = os.path.sep.join(
-    [args["detector"], "res10_300x300_ssd_iter_140000.caffemodel"]
-)
+detectorPath = config.DETECTOR
+protoPath = os.path.sep.join([detectorPath, "deploy.prototxt"])
+modelPath = os.path.sep.join([detectorPath, "res10_300x300_ssd_iter_140000.caffemodel"])
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # load our serialized face embedding model from disk
 lg.info("Loading face recognizer...")
-if args["embedding_model"] == "keras":
+
+embeddings_model = config.EMBEDDINGS
+
+if embeddings_model == "keras":
     from assets import model_bluider as mb
     from tensorflow.keras.preprocessing.image import load_img, img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
@@ -117,7 +110,7 @@ if args["embedding_model"] == "keras":
     model = mb.build_model()
     vgg_face = Model(inputs=model.layers[0].input, outputs=model.layers[-2].output)
 else:
-    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+    embedder = cv2.dnn.readNetFromTorch(embeddings_model)
 
 # load the actual face recognition model along with the label encoder
 recognizer = pickle.loads(open(args["recognizer"], "rb").read())
@@ -177,7 +170,7 @@ for imageName in imagePaths:
         # prediction
         confidence = detections[0, 0, i, 2]
         # filter out weak detections
-        if confidence > 0.5:
+        if confidence > 0.6:
             # compute the (x, y)-coordinates of the bounding box for the face
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
@@ -185,7 +178,7 @@ for imageName in imagePaths:
             face = image[startY:endY, startX:endX]
             (fH, fW) = face.shape[:2]
             # ensure the face width and height are sufficiently large
-            if fW < 20 or fH < 20:
+            if fW < wh_filter or fH < wh_filter:
                 continue
 
             if args["visualization"]:
@@ -195,7 +188,7 @@ for imageName in imagePaths:
             faceCopy = face.copy()
             face = face_alignment(face, visu=False)
 
-            if args["embedding_model"] == "keras":
+            if embeddings_model == "keras":
                 face = cv2.resize(face, (224, 224))
                 face = img_to_array(face)
                 face = np.expand_dims(face, axis=0)
@@ -238,23 +231,12 @@ for imageName in imagePaths:
                     FN += 1
 
             if args["export"] is not None:
-                line = f"Original {nameTrue} | Predicted {namePredict} \n"
+                if namePredict == nameTrue:
+                    line = "SUCCESS -"
+                else:
+                    line = "ERROR   -"
+                line += f"Original {nameTrue} | Predicted {namePredict} with confidence {proba} on file {imageName}, \n"
                 FILE.append(line)
-
-                if nameTrue != namePredict:
-                    montage = [faceCopy.copy()]
-                    text = "{}: {:.2f}%".format(namePredict, proba * 100)
-                    Prd = cv2.putText(
-                        faceCopy,
-                        text,
-                        (10, 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.45,
-                        (0, 0, 255),
-                        2,
-                    )
-                    montage.append(Prd)
-                    Errors.append(build_montages(montage, (400, 500), (2, 1))[0])
 
     if args["visualization"] is not None:
         cv2.destroyAllWindows()
@@ -289,19 +271,7 @@ lg.info(
 )
 
 if args["export"] is not None:
-    with open(args["export"] + "/results.txt", "w") as file:
+    with open(args["export"] + "/results.log", "w") as file:
         file.writelines(FILE)
-    if len(Errors) > 1:
-        cv2.imwrite(
-            args["export"] + "/errors.jpg",
-            build_montages(
-                Errors, (400, 500), (int((FP + FN) / 2), int((FP + FN) / 2))
-            )[0],
-        )
-    else:
-        try:
-            cv2.imwrite(args["export"] + "/errors.jpg", Errors[0])
-        except:
-            pass
 
 lg.info(f"Program ended within {round(time.time() - start, 2)} seconds.")

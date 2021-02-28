@@ -2,8 +2,10 @@
 from imutils import paths
 from assets.face_alignment import face_alignment
 from collections import Counter
+from sklearn.utils import shuffle
 import logging as lg
 import numpy as np
+import config
 import argparse
 import imutils
 import pickle
@@ -12,6 +14,9 @@ import os
 import time
 
 lg.getLogger().setLevel(lg.INFO)
+
+# filter by the size of the detected face
+wh_filter = config.SIZE_DETECTION_THRESHOLD
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -25,25 +30,6 @@ ap.add_argument(
     help="path to output serialized db of facial embeddings",
 )
 ap.add_argument(
-    "-d",
-    "--detector",
-    default="./assets/face_detection_model",
-    help="path to OpenCV's deep learning face detector",
-)
-ap.add_argument(
-    "-m",
-    "--embedding-model",
-    default="./assets/openface.nn4.small2.v1.t7",
-    help="path to deep learning face embedding model or 'keras' if the user wants to use InceptionResNetV2",
-)
-ap.add_argument(
-    "-c",
-    "--confidence",
-    type=float,
-    default=0.5,
-    help="minimum probability to filter weak detections",
-)
-ap.add_argument(
     "-v",
     "--visualization",
     type=bool,
@@ -55,15 +41,17 @@ args = vars(ap.parse_args())
 start = time.time()
 # load our serialized face detector from disk
 lg.info("Loading face detector...")
-protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-modelPath = os.path.sep.join(
-    [args["detector"], "res10_300x300_ssd_iter_140000.caffemodel"]
-)
+detectorPath = config.DETECTOR
+protoPath = os.path.sep.join([detectorPath, "deploy.prototxt"])
+modelPath = os.path.sep.join([detectorPath, "res10_300x300_ssd_iter_140000.caffemodel"])
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
 # load our serialized face embedding model from disk
 lg.info("loading face recognizer...")
-if args["embedding_model"] == "keras":
+
+embeddings_model = config.EMBEDDINGS
+
+if embeddings_model == "keras":
     from assets import model_bluider as mb
     from tensorflow.keras.preprocessing.image import load_img, img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
@@ -86,7 +74,7 @@ if args["embedding_model"] == "keras":
     model = mb.build_model()
     vgg_face = Model(inputs=model.layers[0].input, outputs=model.layers[-2].output)
 else:
-    embedder = cv2.dnn.readNetFromTorch(args["embedding_model"])
+    embedder = cv2.dnn.readNetFromTorch(embeddings_model)
 
 # grab the paths to the input images in our dataset
 lg.info("Quantifying faces...")
@@ -110,6 +98,7 @@ for cl in distinct:
 
 
 lg.info("Processing images...")
+imagePaths = shuffle(imagePaths)
 # loop over the image paths
 for (i, imagePath) in enumerate(imagePaths):
     # extract the person name from the image path
@@ -118,14 +107,6 @@ for (i, imagePath) in enumerate(imagePaths):
     # maintaining the aspect ratio), and then grab the image
     # dimensions
     image = cv2.imread(imagePath)
-
-    if args["visualization"]:
-        cv2.imshow(
-            "current processed image",
-            cv2.resize(image, (500, 500), interpolation=cv2.INTER_AREA),
-        )
-        cv2.waitKey(1)
-
     image = imutils.resize(image, width=600)
 
     (h, w) = image.shape[:2]
@@ -152,7 +133,7 @@ for (i, imagePath) in enumerate(imagePaths):
         # ensure that the detection with the largest probability also
         # means our minimum probability test (thus helping filter out
         # weak detections)
-        if confidence > args["confidence"]:
+        if confidence > 0.6:
             # compute the (x, y)-coordinates of the bounding box for
             # the face
             box = detections[0, 0, j, 3:7] * np.array([w, h, w, h])
@@ -161,13 +142,17 @@ for (i, imagePath) in enumerate(imagePaths):
             face = image[startY:endY, startX:endX]
             (fH, fW) = face.shape[:2]
             # ensure the face width and height are sufficiently large
-            if fW < 20 or fH < 20:
+            if fW < wh_filter or fH < wh_filter:
                 continue
+
+            if args["visualization"]:
+                cv2.imshow("current processed image", face)
+                cv2.waitKey(1)
 
             # pre-process the image by running face alignment
             face = face_alignment(face, False)
 
-            if args["embedding_model"] == "keras":
+            if embeddings_model == "keras":
                 face = cv2.resize(face, (224, 224))
                 face = img_to_array(face)
                 face = np.expand_dims(face, axis=0)
