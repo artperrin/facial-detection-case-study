@@ -67,8 +67,8 @@ ap.add_argument(
     "-e",
     "--export",
     type=str,
-    default=None,
-    help="path to result log if wanted",
+    default=".",
+    help="path to result log if wanted (main folder by default, None if not wanted)",
 )
 args = vars(ap.parse_args())
 
@@ -261,14 +261,12 @@ if NB_FACES < len(imagePaths):
     )
 
 lg.info(
-    f"Results of the test: {round(TP/NB_FACES*100,1)} % true positives with {round(positive_confidence/TP, 2)} mean confidence,"
+    f"Results of the test: {round(TP/(TP+FN)*100,1)} % true positives with {round(positive_confidence/TP, 2)} mean confidence,"
 )
-lg.info(f"-------------------: {round(TN/NB_FACES*100,1)} % true negatives,")
-lg.info(f"-------------------: {round(FP/NB_FACES*100,1)} % false positives,")
-lg.info(f"-------------------: {round(FN/NB_FACES*100,1)} % false negatives.")
-lg.info(
-    f"Overall accuracy of the model : {round(TP/NB_FACES*100,1)+round(TN/NB_FACES*100,1)} %."
-)
+lg.info(f"-------------------: {round(TN/(TN+FP)*100,1)} % true negatives,")
+lg.info(f"-------------------: {round(FP/(TP+FN)*100,1)} % false positives,")
+lg.info(f"-------------------: {round(100-TP/(TP+FN)*100,1)} % false negatives.")
+lg.info(f"Overall accuracy of the model : {round((TP+TN)/NB_FACES*100,1)} %.")
 
 if args["export"] is not None:
     with open(args["export"] + "/results.log", "w") as file:

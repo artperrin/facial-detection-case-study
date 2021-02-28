@@ -172,7 +172,15 @@ INFO:root:Program ended within 19.26 seconds.
 
 The error here was with Lily James' earring, but it can be other faces in the background for example.
 
-To finish, I added a new `config.py` file for the user to set his "overall" parameters (like the embeddings method) easier.
+To finish, I added a new `config.py` file for the user to set his global variables (like the embeddings method) easier.
+
+After re-training the model and testing it, I obtained the following results (*metrics changed, the percentages here are not just relative to the total number of images, but represents the proportion of positive/negative answers that are actually correct):
+
+|True positive|True negative|False positive|False negative|
+| :---------- | :---------: | :----------: | ------------:|
+|    98.7 %   |    100 %    |      0 %     |     1.3 %    |
+
+and an overall accuracy (proportion of true positives true negatives, same as before) of 99.3 %.
 
 ## Credits
 
