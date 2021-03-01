@@ -182,6 +182,14 @@ After re-training the model and testing it, I obtained the following results (*m
 
 and an overall accuracy (proportion of true positives true negatives, same as before) of 99.3 %.
 
+***Edit: comparison with OpenCV's embeddings extractor: re-training my model with the 128-D embeddings extracted by the OpenCV's method, I have the following test results:***
+
+|True positive|True negative|False positive|False negative|
+| :---------- | :---------: | :----------: | ------------:|
+|    53.3 %   |    91.5 %   |     8.5 %    |    46.7 %    |
+
+***and an overall accuracy of 71.1 %. It is not bad, but with this method the model seems to need more training data as there are a lot of false negatives. In addition, it isn't a lot faster than Keras, one just saves the starting time of Tensorflow.***
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.

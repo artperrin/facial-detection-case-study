@@ -1,14 +1,9 @@
 # import the necessary packages
 from assets.face_alignment import face_alignment
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras.models import Model
 from sklearn.utils import shuffle
 from collections import Counter
 from imutils import paths
-import tensorflow.keras.backend as K
 import config
-import tensorflow as tf
 import numpy as np
 import logging as lg
 import time
@@ -22,20 +17,6 @@ lg.getLogger().setLevel(lg.INFO)
 
 # filter by the size of the detected face
 wh_filter = config.SIZE_DETECTION_THRESHOLD
-
-# to compute with GPU
-gpus = tf.config.experimental.list_physical_devices("GPU")
-
-if gpus:
-    try:
-        # Currently, memory growth needs to be the same across GPUs
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
-        # Memory growth must be set before GPUs have been initialized
-        print(e)
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -53,7 +34,7 @@ ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.7,
+    default=0.65,
     help="minimum probability to filter weak detections",
 )
 ap.add_argument(
@@ -74,6 +55,7 @@ args = vars(ap.parse_args())
 
 if args["export"] is not None:
     FILE = [f"""# Results log \n Test ran with confidence {args["confidence"]}. \n"""]
+    FILE.append('')
 
 start = time.time()
 # load our serialized face detector from disk
@@ -89,7 +71,7 @@ embeddings_model = config.EMBEDDINGS
 
 if embeddings_model == "keras":
     from assets import model_bluider as mb
-    from tensorflow.keras.preprocessing.image import load_img, img_to_array
+    from tensorflow.keras.preprocessing.image import img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
     from tensorflow.keras.models import Model
     import tensorflow.keras.backend as K
@@ -144,7 +126,7 @@ for cl in distinct:
 
 imagePaths = shuffle(imagePaths)
 
-lg.info("Opening images and making predictions...")
+lg.info(f"Opening {len(imagePaths)} images and making predictions...")
 # loop over the image paths
 for imageName in imagePaths:
     image = cv2.imread(imageName)
@@ -207,7 +189,16 @@ for imageName in imagePaths:
                 pred = embedder.forward()
 
             # perform classification to recognize the face
-            preds = recognizer.predict_proba(pred)[0]
+            if count == 1:  # if this is the first prediction
+                try:
+                    preds = recognizer.predict_proba(pred)[0]
+                except ValueError as er:
+                    lg.error(er)
+                    lg.error(
+                        f"It seems that the model has been trained to work with embeddings extrated with another method than {config.EMBEDDINGS},\n try to re-train your classifier or extract new embeddings with the expected method."
+                    )
+            else:
+                preds = recognizer.predict_proba(pred)[0]
             j = np.argmax(preds)
             proba = preds[j]
             namePredict = le.classes_[j]
@@ -264,11 +255,12 @@ lg.info(
     f"Results of the test: {round(TP/(TP+FN)*100,1)} % true positives with {round(positive_confidence/TP, 2)} mean confidence,"
 )
 lg.info(f"-------------------: {round(TN/(TN+FP)*100,1)} % true negatives,")
-lg.info(f"-------------------: {round(FP/(TP+FN)*100,1)} % false positives,")
+lg.info(f"-------------------: {round(100-TN/(TN+FP)*100,1)} % false positives,")
 lg.info(f"-------------------: {round(100-TP/(TP+FN)*100,1)} % false negatives.")
 lg.info(f"Overall accuracy of the model : {round((TP+TN)/NB_FACES*100,1)} %.")
 
 if args["export"] is not None:
+    FILE[1]=f'Number of errors: {FP+FN}/{NB_FACES}, overall accuracy {round((TP+TN)/NB_FACES*100,1)} %.\n'
     with open(args["export"] + "/results.log", "w") as file:
         file.writelines(FILE)
 
