@@ -23,17 +23,20 @@ ap.add_argument(
     "-r",
     "--recognizer",
     default="./output/recognizer.pickle",
-    help="path to model trained to recognize faces",
+    help="path to model trained to recognize faces (default ./output folder)",
 )
 ap.add_argument(
-    "-l", "--le", default="./output/le.pickle", help="path to label encoder"
+    "-l",
+    "--le",
+    default="./output/le.pickle",
+    help="path to label encoder (default ./output folder)",
 )
 ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.7,
-    help="minimum probability to filter weak detections",
+    default=0.6,
+    help="minimum probability to filter weak detections (default .6)",
 )
 args = vars(ap.parse_args())
 
@@ -77,7 +80,7 @@ else:
 recognizer = pickle.loads(open(args["recognizer"], "rb").read())
 le = pickle.loads(open(args["le"], "rb").read())
 
-lg.info('Loading video...')
+lg.info("Loading video...")
 # load the video
 cap = cv2.VideoCapture(args["video"])
 
@@ -87,12 +90,12 @@ if not cap.isOpened():
 time.sleep(2.0)
 # start the FPS throughput estimator
 fps = FPS().start()
-frame = 0
+frame = 15
 # loop over frames from the video file stream
 while cap.isOpened():
     # grab the frame from the threaded video stream
     ret, image = cap.read()
-    frame+=1
+    frame += 1
     if ret:
         image = imutils.resize(image, width=600)
         (h, w) = image.shape[:2]
@@ -162,23 +165,32 @@ while cap.isOpened():
                 y = startY - 10 if startY - 10 > 10 else startY + 10
                 cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
                 cv2.putText(
-                    image, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2
+                    image,
+                    text,
+                    (startX, y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.45,
+                    (0, 0, 255),
+                    2,
                 )
         fps.update()
         # show the output image
         cv2.imshow("Image", image)
+        cv2.imwrite(f"./gif/frame_{frame}.jpg", image)
         q = cv2.waitKey(1) & 0xFF
         if q == ord("q"):
-            lg.info('Player stopped.')
+            lg.info("Player stopped.")
             break
-    
+
     else:
-        lg.info('End of the video.')
+        lg.info("End of the video.")
         break
 
 fps.stop()
 
-lg.info(f"Program ended within {round(time.time()-start, 2)} seconds, performed {fps.fps()} FPS.")
+lg.info(
+    f"Program ended within {round(time.time()-start, 2)} seconds, performed {fps.fps()} FPS."
+)
 
 cv2.destroyAllWindows()
 cap.release()

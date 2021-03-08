@@ -27,14 +27,14 @@ ap.add_argument(
     "-e",
     "--embeddings",
     default="./output/embeddings.pickle",
-    help="path to output serialized db of facial embeddings",
+    help="path to output serialized db of facial embeddings (default ./output folder)",
 )
 ap.add_argument(
     "-v",
     "--visualization",
     type=bool,
     default=False,
-    help="if the user wants to visualize the face alignment",
+    help="if the user wants to visualize the face alignment (default False)",
 )
 args = vars(ap.parse_args())
 

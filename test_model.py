@@ -25,24 +25,27 @@ ap.add_argument(
     "-r",
     "--recognizer",
     default="./output/recognizer.pickle",
-    help="path to model trained to recognize faces",
+    help="path to model trained to recognize faces (default ./output folder)",
 )
 ap.add_argument(
-    "-l", "--le", default="./output/le.pickle", help="path to label encoder"
+    "-l",
+    "--le",
+    default="./output/le.pickle",
+    help="path to label encoder (default ./output folder)",
 )
 ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.65,
-    help="minimum probability to filter weak detections",
+    default=0.6,
+    help="minimum probability to filter weak detections (default .6)",
 )
 ap.add_argument(
     "-v",
     "--visualization",
     type=bool,
     default=False,
-    help="if the user wants to visualize each results",
+    help="if the user wants to visualize each results as they are processed (default False)",
 )
 ap.add_argument(
     "-e",
@@ -55,7 +58,7 @@ args = vars(ap.parse_args())
 
 if args["export"] is not None:
     FILE = [f"""# Results log \n Test ran with confidence {args["confidence"]}. \n"""]
-    FILE.append('')
+    FILE.append("")
 
 start = time.time()
 # load our serialized face detector from disk
@@ -260,7 +263,9 @@ lg.info(f"-------------------: {round(100-TP/(TP+FN)*100,1)} % false negatives."
 lg.info(f"Overall accuracy of the model : {round((TP+TN)/NB_FACES*100,1)} %.")
 
 if args["export"] is not None:
-    FILE[1]=f'Number of errors: {FP+FN}/{NB_FACES}, overall accuracy {round((TP+TN)/NB_FACES*100,1)} %.\n'
+    FILE[
+        1
+    ] = f"Number of errors: {FP+FN}/{NB_FACES}, overall accuracy {round((TP+TN)/NB_FACES*100,1)} %.\n"
     with open(args["export"] + "/results.log", "w") as file:
         file.writelines(FILE)
 

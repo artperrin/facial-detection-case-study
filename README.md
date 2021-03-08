@@ -3,17 +3,19 @@
 This repository contains a work made for a Computer Vision course at the *Ecole Centrale de Lille*.
 
 Its aim is to detect and recognize each face, firstly of an image, then of a video.
-As an example, I used pictures of celebrities.
+As an example, I used pictures of celebrities for the program to recognize Emma Stone, Ryan Gosling and Lily James. All the other detected actors are recognized as 'unknow'.
 
-![example](./readme_figures/output.jpg)
+![example](./readme_figures/output.gif)
 
 This repository contains:
 * a `extract_embeddings.py` script to extract embeddings from the dataset,
 * a `train_model.py` script to train the SVM model to classify the subjects,
-* a `recognize.py` script to run the model on an image,
-* a `test_model.py` script to run the model on multiple images (almost strict copy of the previous script), 
-* an `/assets` folder where one can find the models used for embeddings extractions and the face_alignment.py script imported in the main scripts,
-* an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the `recognize.py` script).
+* a `recognize_image.py` script to run the model on an image,
+* a `test_model.py` script to run the model on multiple images (almost strict copy of the previous script),
+* a `recognize_video.py` script to run the model on a video,
+* a `config.py` script to run the model on multiple images (almost strict copy of the previous script), 
+* an `/assets` folder where one can find the OpenCV models used for embeddings extractions and face detection, as well as some useful scripts,
+* an `/output` folder where the trained model, labels and extracted embeddings are stored by default (the user will find my own files for him to test the program).
 
 First of all, the user must install the needed libraries by running the command line:
 ```sh

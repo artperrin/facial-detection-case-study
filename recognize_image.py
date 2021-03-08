@@ -22,24 +22,27 @@ ap.add_argument(
     "-r",
     "--recognizer",
     default="./output/recognizer.pickle",
-    help="path to model trained to recognize faces",
+    help="path to model trained to recognize faces (default ./output folder)",
 )
 ap.add_argument(
-    "-l", "--le", default="./output/le.pickle", help="path to label encoder"
+    "-l",
+    "--le",
+    default="./output/le.pickle",
+    help="path to label encoder (default ./output folder)",
 )
 ap.add_argument(
     "-c",
     "--confidence",
     type=float,
-    default=0.7,
-    help="minimum probability to filter weak detections",
+    default=0.6,
+    help="minimum probability to filter weak detections (default .6)",
 )
 ap.add_argument(
     "-v",
     "--visualization",
     type=bool,
     default=False,
-    help="if the user wants to visualize the face alignment",
+    help="if the user wants to visualize the face alignment (default False)",
 )
 args = vars(ap.parse_args())
 

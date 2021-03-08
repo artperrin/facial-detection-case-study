@@ -14,16 +14,19 @@ ap.add_argument(
     "-e",
     "--embeddings",
     default="./output/embeddings.pickle",
-    help="path to serialized db of facial embeddings",
+    help="path to serialized db of facial embeddings (default ./output folder)",
 )
 ap.add_argument(
     "-r",
     "--recognizer",
     default="./output/recognizer.pickle",
-    help="path to output model trained to recognize faces",
+    help="path to output model trained to recognize faces (default ./output folder)",
 )
 ap.add_argument(
-    "-l", "--le", default="./output/le.pickle", help="path to output label encoder"
+    "-l",
+    "--le",
+    default="./output/le.pickle",
+    help="path to output label encoder (default ./output folder)",
 )
 args = vars(ap.parse_args())
 
