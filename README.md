@@ -192,7 +192,7 @@ and an overall accuracy (proportion of true positives true negatives, same as be
 
 ### Eighthly
 
-I implemented a new `recognize_video.py` script in order to apply the model on a video. It showd great results on a small clip from La La Land, even though the model fails to predict who the actor is when his face is not fully visible ; and the performances are pretty low (my Nvidia RTX 2060 performed with 0.67 FPS).
+I implemented a new `recognize_video.py` script in order to apply the model on a video. It showd great results on small clips from *La La Land* and *Pride and Prejudice and Zombies*, even though the model fails to predict who the actor is when his face is not fully visible ; and the performances are pretty low (my Nvidia RTX 2060 performed with 0.67 FPS).
 
 ![animation video actors recognition](./readme_figures/video_recognition.gif)
 
