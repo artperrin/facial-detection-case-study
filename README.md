@@ -190,6 +190,17 @@ and an overall accuracy (proportion of true positives true negatives, same as be
 
 ***and an overall accuracy of 71.1 %. It is not bad, but with this method the model seems to need more training data as there are a lot of false negatives. In addition, it isn't a lot faster than Keras, one just saves the starting time of Tensorflow.***
 
+### Eighthly
+
+I implemented a new `recognize_video.py` script in order to apply the model on a video. It showd great results on a small clip from La La Land, even though the model fails to predict who the actor is when his face is not fully visible ; and the performances are pretty low (my Nvidia RTX 2060 performed with 0.67 FPS).
+
+![animation video actors recognition](./readme_figures/video_recognition.gif)
+
+Still, in the above and below illustration we see that the confidence of the predictions are quite good, and our filters are even able to remove unwanted background faces (some are too small and/or have a bad detection confidence).
+In addition, the program is still able to recognize "unknow" actors from the ones he's been trained with (below Sam Riley and Lily James respectively).
+
+![animation video unknow recognition](./readme_figures/video_recognition_2.gif)
+
 ## Credits
 
 This code has been implemented based on [this tutorial](https://www.pyimagesearch.com/2018/09/24/opencv-face-recognition/) written by [Adrian Rosebrock](https://github.com/jrosebr1), whose very good content has been quite helpful for me.

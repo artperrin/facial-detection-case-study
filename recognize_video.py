@@ -87,12 +87,12 @@ if not cap.isOpened():
 time.sleep(2.0)
 # start the FPS throughput estimator
 fps = FPS().start()
-
+frame = 0
 # loop over frames from the video file stream
 while cap.isOpened():
     # grab the frame from the threaded video stream
     ret, image = cap.read()
-
+    frame+=1
     if ret:
         image = imutils.resize(image, width=600)
         (h, w) = image.shape[:2]
@@ -110,7 +110,6 @@ while cap.isOpened():
         # faces in the input image
         detector.setInput(imageBlob)
         detections = detector.forward()
-
         # loop over the detections
         for i in range(0, detections.shape[2]):
             # extract the confidence (i.e., probability) associated with the
@@ -165,10 +164,10 @@ while cap.isOpened():
                 cv2.putText(
                     image, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2
                 )
-
         fps.update()
         # show the output image
         cv2.imshow("Image", image)
+        cv2.imwrite(f'./gif/frame_{frame}.jpg', image)
         q = cv2.waitKey(1) & 0xFF
         if q == ord("q"):
             lg.info('Player stopped.')
