@@ -167,7 +167,6 @@ while cap.isOpened():
         fps.update()
         # show the output image
         cv2.imshow("Image", image)
-        cv2.imwrite(f'./gif/frame_{frame}.jpg', image)
         q = cv2.waitKey(1) & 0xFF
         if q == ord("q"):
             lg.info('Player stopped.')
