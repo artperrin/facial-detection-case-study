@@ -1,20 +1,10 @@
-# Tensorflow version == 2.0.0
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import ZeroPadding2D, Convolution2D, MaxPooling2D
 from tensorflow.keras.layers import (
-    Dense,
     Dropout,
-    Softmax,
     Flatten,
     Activation,
-    BatchNormalization,
 )
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-from tensorflow.keras.applications.imagenet_utils import preprocess_input
-import tensorflow.keras.backend as K
 
 # Define VGG_FACE_MODEL architecture
 def build_model():

@@ -54,12 +54,11 @@ modelPath = os.path.sep.join([detectorPath, "res10_300x300_ssd_iter_140000.caffe
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # load our serialized face embedding model from disk
 lg.info("Loading face recognizer...")
-
 embeddings_model = config.EMBEDDINGS
 
 if embeddings_model == "keras":
     from assets import model_bluider as mb
-    from tensorflow.keras.preprocessing.image import load_img, img_to_array
+    from tensorflow.keras.preprocessing.image import img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
     from tensorflow.keras.models import Model
     import tensorflow.keras.backend as K
@@ -92,7 +91,6 @@ lg.info("Loading image and applying detection...")
 image = cv2.imread(args["image"])
 image = imutils.resize(image, width=600)
 (h, w) = image.shape[:2]
-
 # construct a blob from the image
 imageBlob = cv2.dnn.blobFromImage(
     cv2.resize(image, (300, 300)),
@@ -106,7 +104,6 @@ imageBlob = cv2.dnn.blobFromImage(
 # faces in the input image
 detector.setInput(imageBlob)
 detections = detector.forward()
-
 # loop over the detections
 for i in range(0, detections.shape[2]):
     # extract the confidence (i.e., probability) associated with the

@@ -39,8 +39,7 @@ lg.info("Encoding labels...")
 le = LabelEncoder()
 labels = le.fit_transform(data["names"])
 
-# train the model used to accept the 128-d embeddings of the face and
-# then produce the actual face recognition
+# train the model used to accept the embeddings of the face
 lg.info("Training model...")
 recognizer = SVC(gamma="scale", C=1, probability=True)  # with RBF SVC
 recognizer.fit(data["embeddings"], labels)

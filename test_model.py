@@ -224,6 +224,7 @@ for imageName in imagePaths:
                 else:
                     FN += 1
 
+            # fill the export log if needed
             if args["export"] is not None:
                 if namePredict == nameTrue:
                     line = "SUCCESS -"
@@ -243,17 +244,19 @@ for imageName in imagePaths:
         else:
             progress += "."
 
+    # display the progress
     print(f"{count}/{len(imagePaths)} [" + progress + "]", end="\r", flush=True)
     count += 1
 
 print("", flush=True)
 
-# conclusion
+# test if some faces are missing (always false if the testing dataset is clean)
 if NB_FACES < len(imagePaths):
     lg.warning(
         f"Not all faces have been detected, {len(imagePaths)-NB_FACES+1} missing."
     )
 
+# write the results of the script
 lg.info(
     f"Results of the test: {round(TP/(TP+FN)*100,1)} % true positives with {round(positive_confidence/TP, 2)} mean confidence,"
 )
@@ -262,6 +265,7 @@ lg.info(f"-------------------: {round(100-TN/(TN+FP)*100,1)} % false positives,"
 lg.info(f"-------------------: {round(100-TP/(TP+FN)*100,1)} % false negatives.")
 lg.info(f"Overall accuracy of the model : {round((TP+TN)/NB_FACES*100,1)} %.")
 
+# export the log file if needed
 if args["export"] is not None:
     FILE[
         1

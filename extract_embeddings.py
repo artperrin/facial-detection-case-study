@@ -53,7 +53,7 @@ embeddings_model = config.EMBEDDINGS
 
 if embeddings_model == "keras":
     from assets import model_bluider as mb
-    from tensorflow.keras.preprocessing.image import load_img, img_to_array
+    from tensorflow.keras.preprocessing.image import img_to_array
     from tensorflow.keras.applications.imagenet_utils import preprocess_input
     from tensorflow.keras.models import Model
     import tensorflow.keras.backend as K
@@ -96,7 +96,7 @@ for cl in distinct:
         f"There are {sum([1 if name==cl else 0 for name in classes])} elements in the {cl} class."
     )
 
-
+# processing images
 lg.info("Processing images...")
 imagePaths = shuffle(imagePaths)
 # loop over the image paths
